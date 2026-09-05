@@ -1,0 +1,49 @@
+{
+  "schema": "aperture-public-verification/linux-first-use@1",
+  "observed_at": "2026-09-05T17:49:09Z",
+  "evidence_class": "public_package_native_execution",
+  "release": {
+    "version": "0.4.3",
+    "tag": "v0.4.3",
+    "commit": "de2e030cf86539ca4a5b5a093503f0abd82ce689",
+    "package_sha256": "0bf13b2fbebba34af5796ca80b72d8ad801adbf8360bdb5eb2e621fb5febaea8"
+  },
+  "host": {"platform": "linux", "architecture": "x64", "separate_physical_host": true},
+  "fresh_boundaries": {
+    "npm_cache": "empty",
+    "aperture_home": "empty",
+    "managed_runtime": "new node-llama-cpp 3.20.0 installation",
+    "model_cache": "new download"
+  },
+  "model": {
+    "repository": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "9217f5db79a29953eb74d5343926648285ec7e67",
+    "file": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "bytes": 491400032,
+    "sha256": "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db"
+  },
+  "request": {"context_tokens": 2048, "sequences": 1, "backend": "cpu", "threads": 4},
+  "execution": {
+    "status": "GENERATED_NOT_TASK_QUALIFIED",
+    "output": "42",
+    "observed_context_tokens": 2048,
+    "observed_gpu_layers": 0,
+    "load_seconds": 2.5756,
+    "generation_seconds": 0.6255,
+    "input_tokens": 83,
+    "output_tokens": 3,
+    "process_exit": 0
+  },
+  "integrity": {
+    "provider_sha256_verified": true,
+    "runtime_version_verified": true,
+    "run_summary_sha256": "115f41045a10e550f5c5abfa9f864ec2d07d5f64d6d39a844cac77906da0aaea",
+    "execution_log_sha256": "17606510eae1f9ee0c6fefb5910391f57c6f178c3daf52af42e979bfb714168b"
+  },
+  "boundaries": [
+    "This is a separate physical Linux host in the same operator-controlled estate, not an unrelated public tester.",
+    "The host already had Node.js and npm; Aperture installed its own managed native runtime and model copy.",
+    "Zero GPU layers is CPU execution.",
+    "The arithmetic smoke output is not general model-quality or performance qualification."
+  ]
+}
