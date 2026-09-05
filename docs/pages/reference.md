@@ -1,9 +1,9 @@
 # Command reference
 
-These commands describe **Aperture 0.4.5**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
+These commands describe **Aperture 0.4.6**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.5/bigbirdreturns-aperture-0.4.5.tgz aperture --help
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture --help
 ```
 
 Use `npx.cmd` on Windows PowerShell. The reference is checked against the released command's option names; unsupported commands are not inferred from related projects.
@@ -63,6 +63,8 @@ Use model and execution flags during **setup**. Resumed execution refuses flags 
 | `--allow-run` | Local execution of the selected configuration. |
 
 Omitting a flag leaves its operation subject to interactive approval. Experiment approval remains separate. A repository with several representations still requires a selection; use an exact artifact for deterministic automation. Never add all permissions merely to dismiss an unexplained error.
+
+A saved remote GGUF can bind to its exact complete Aperture-managed cache before model-host or transfer approval. The cache key retains source, revision, representation, component names, sizes, and expected hashes. Every selected component is still completely hashed before final native fit and load. Missing, changed, symbolic, differently identified, or unsupported cache entries do not receive this shortcut. Safetensors remain on the ordinary verified acquisition path.
 
 The `support` command accepts only `--allow-scan`, `--home`, and `--out`. It rejects model, context, backend, network, download, installation, execution, and prompt flags rather than implying that those operations contribute to the receipt.
 

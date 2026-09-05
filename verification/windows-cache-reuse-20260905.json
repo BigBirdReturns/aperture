@@ -1,0 +1,65 @@
+{
+  "schema": "aperture-native-cache-reuse/1",
+  "observedDate": "2026-09-05",
+  "platform": "windows-x64",
+  "candidate": {
+    "executableCommit": "7f2848b9faf3fffca62416958c980aa4b68cf341",
+    "finalReviewHead": "ad8cbf02a4e9f17248d9155c085a058b2768de9b",
+    "releasePackageSourceCommit": "cfbc8222f932e43a6d4397cbc2ce4f1cb8131d97"
+  },
+  "model": {
+    "publisher": "Qwen",
+    "repository": "Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "9217f5db79a29953eb74d5343926648285ec7e67",
+    "representation": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "format": "GGUF",
+    "quantization": "Q4_K_M",
+    "bytes": 491400032,
+    "sha256": "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db"
+  },
+  "request": {
+    "contextTokens": 2048,
+    "sequences": 1,
+    "backend": "cuda"
+  },
+  "managedCache": {
+    "exactAcquisitionKeyMatched": true,
+    "completeBeforeResume": true,
+    "regularFilesRequired": true,
+    "modelHostRequestDuringResume": false,
+    "weightTransferDuringResume": false,
+    "networkPermissionSuppliedDuringResume": false,
+    "downloadPermissionSuppliedDuringResume": false,
+    "completeIntegrityHashRepeated": true,
+    "nativeFitRepeatedBeforeLoad": true
+  },
+  "execution": {
+    "outputAssertion": "FINAL CACHE PASS",
+    "observedGpuLayers": 25,
+    "observedContextTokens": 2048,
+    "exitCode": 0,
+    "selectedWorkerReleased": true,
+    "candidateOwnedProcessesRemaining": 0
+  },
+  "controls": {
+    "sourceControlTestsPassed": 169,
+    "sourceControlTestsFailed": 0,
+    "packageInstallSmokePassed": true,
+    "hostedNode22And24MatrixPassed": true,
+    "documentationAndBrowserChecksPassed": true
+  },
+  "privacy": {
+    "localPathsIncluded": false,
+    "gpuUuidsIncluded": false,
+    "hostOrUserNameIncluded": false,
+    "modelWeightsIncluded": false,
+    "privateRunRecordIncluded": false
+  },
+  "boundaries": [
+    "One managed GGUF lifecycle on one Windows x64 host.",
+    "No arbitrary cache import or global cache search is established.",
+    "Full file hashing, native fit, runtime approval, and execution approval remain separate gates.",
+    "Safetensors do not use the managed-GGUF shortcut.",
+    "No general offline, model-quality, NPU, native-Mac, distributed-inference, or pooled-memory claim follows."
+  ]
+}

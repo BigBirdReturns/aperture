@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.4.6
 
 A complete GGUF already present in Aperture's managed cache is now bound locally before remote native-fit metadata or weight-acquisition permission is requested. The cache key preserves the selected source, revision, representation, component sizes, and expected hashes; complete integrity hashing still repeats before loading. Incomplete transfers retain the existing explicit permission and resumable-acquisition path. Safetensors reuse remains on the existing full verification and acquisition path.
+
+The CLI help, command reference, and privacy ledger distinguish reuse of a complete exact managed cache from permission to download or resume missing bytes. A separate Windows x64 passage resumed the fixed 0.5B GGUF without model-host or weight-transfer approval, repeated full hashing and native fit, generated through CUDA with 25 observed GPU layers at 2,048-token context, exited successfully, and released the worker.
 
 ## 0.4.5
 
