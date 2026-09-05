@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {redactScan,supportReceipt} from '../lib/support.mjs';
+import {hardwareName,redactScan,supportReceipt} from '../lib/support.mjs';
 import {GiB} from '../lib/common.mjs';
 
 const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'aperture-support-test-'));
@@ -28,6 +28,10 @@ const machine={
 function fakeUI(answer=false){const log=[];return {log,say:value=>log.push(value),write:value=>log.push(value),confirm:async()=>answer};}
 
 test('support receipt rejects a non-scan object',()=>assert.throws(()=>redactScan({}),error=>error.code==='SCAN_FORMAT'));
+test('identifier-shaped hardware labels are withheld',()=>{
+  for(const value of ['0000:03:00.0','03:00.0','PCI\\VEN_1234','USB\\VID_1234','/sys/bus/pci/devices/0000:03:00.0','C:\\private\\device','00:11:22:33:44:55'])assert.equal(hardwareName(value),null,value);
+  assert.equal(hardwareName('Intel Arc Graphics'),'Intel Arc Graphics');
+});
 test('support receipt retains useful classes and removes stable local identifiers',()=>{
   const receipt=redactScan(machine),encoded=JSON.stringify(receipt);
   assert.equal(receipt.schema,'aperture-support/1');
