@@ -29,7 +29,7 @@ Windows GPU workers initially stalled during runtime import when inheriting the 
 
 ## Repeatable checks
 
-`npm test` exercises 154 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+`npm test` exercises 156 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
 
 ## CUDA discovery correction, 0.4.1
 
@@ -78,7 +78,7 @@ The first detailed Windows inventory attempt exceeded the release's monolithic 2
 The unreleased scan candidate splits core and extended Windows inventory into independently bounded concurrent groups, performs one PnP enumeration for NPU and external-link rows, preserves core facts when extended storage or network inventory fails, and reports the whole inventory as unavailable only when both groups fail. All 141 branch source and control tests pass, including three public-receipt controls. On the same host, a subsequent real scan returned the complete inventory in 7.946 seconds with no errors. The providers had already been exercised, so that duration is an observed warm-provider result rather than a clean-machine latency guarantee.
 
 The [public receipt](verification/windows-public-first-use-20260905.json) excludes local paths, prompts, GPU UUIDs, and model weights. The complete records remain in local custody. This passage adds one Windows machine and one supported model to the evidence. It does not establish broad task quality, a decode-only throughput result, native Mac support, NPU execution, or successful inference with a checkpoint larger than the selected GPU's physical capacity.
-## 0.4.4 candidate: bounded Windows scan and CUDA regression
+## 0.4.4 release qualification: bounded Windows scan and CUDA regression
 
 The 0.4.4 candidate separates core Windows CPU, memory, graphics, NPU and external-link discovery from extended disk, volume, partition and network inventory. The bounded groups run concurrently and share one PnP enumeration. A failed extended group now leaves completed core facts visible, while both groups must fail before the operating-system inventory is classified unavailable. On the second Windows host, the repaired scan returned complete observations with no errors in 7.946 seconds after the providers had already been exercised. That duration is a warm-provider observation, not a clean-machine latency guarantee.
 
