@@ -1,0 +1,8 @@
+# Preserve the original canonical identity bytes across platforms.
+docs/identity/* -text
+# Keep generated text stable between Windows and hosted documentation builds.
+docs/assets/*.svg text eol=lf
+docs/assets/*.css text eol=lf
+docs/assets/*.js text eol=lf
+docs/templates/*.html text eol=lf
+tools/*.py text eol=lf

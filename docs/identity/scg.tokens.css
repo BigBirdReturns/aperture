@@ -1,0 +1,15 @@
+/* SCG design tokens — the practice-derivative layer.
+   Governed by ../SCG_MARK_CONSTITUTION.md. These tokens dress everything
+   AROUND the mark; the mark itself is the frozen bitmap in scg-pixel-mark.js.
+   Never add a color to the mark. Ember is findings/flags only. */
+:root {
+  /* palette — 4 tokens, FROZEN (constitution §1, §4) */
+  --scg-bone:  #ECE7D8;  /* the bloom · text on void */
+  --scg-olive: #7C7F57;  /* stem · secondary labels */
+  --scg-void:  #0D0C09;  /* the field · all backgrounds */
+  --scg-ember: #C24B2C;  /* findings / flags ONLY — never in the mark */
+
+  /* type */
+  --scg-sans: 'IBM Plex Sans', system-ui, sans-serif;    /* 600 · display & lockups (uppercase, wide tracking) */
+  --scg-mono: 'IBM Plex Mono', ui-monospace, monospace;  /* 400 · body, labels, evidence */
+}
