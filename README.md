@@ -55,7 +55,7 @@ The managed GGUF path selects one compatible CUDA or Vulkan device, Apple Metal,
 
 ## Verification
 
-[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. The reported 4060 split exceeds **available** VRAM, not its nominal physical capacity. A successful beyond-physical-capacity run is not yet established. The earlier 0.4.1 record also includes actual RTX 3090 CUDA generation and two-turn continuity after the installed-library discovery correction. A separate [public 0.4.3 first-use receipt](verification/windows-public-first-use-20260905.json) records an additional Windows host completing clean-cache installation, pre-download fit, provider-hash verification, CUDA generation, two-turn context retention, and clean release of its worker processes.
+[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. Release 0.4.3 retains the earlier split above **available** VRAM and its separate Windows first-use passage. A current development candidate now records Qwen2.5-14B Q4_K_M generating `42` with 30 of 49 layers on an RTX 4060 at 2,048-token context; the native tensor payload exceeds the device's reported physical memory. Its system-headroom watchdog also completed the exact plan that the former RSS proxy aborted. See the path-free [physical-capacity receipt](verification/windows-physical-capacity-20260905.json) and the separate-host [Linux public first-use receipt](verification/linux-public-first-use-20260905.json). These observations remain candidate evidence until a successor package is released.
 
 ```sh
 npm test
