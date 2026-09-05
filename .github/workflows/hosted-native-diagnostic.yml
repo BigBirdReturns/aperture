@@ -1,0 +1,140 @@
+name: Diagnose hosted native boundaries
+on:
+  push:
+    branches: ['diagnostic/hosted-native-boundaries-20260905']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hosted-native-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  windows-completion:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      PACKAGE_URL: https://github.com/BigBirdReturns/aperture/releases/download/v0.4.5/bigbirdreturns-aperture-0.4.5.tgz
+      PACKAGE_SHA256: 1b539bbfb6eeb315a9cbc341baf0d2978546106da3efce9ef1afd1ca43bae13e
+      MODEL_URL: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Preserve the post-generation worker record
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'windows-completion'
+          $apertureHome = Join-Path $root 'home'
+          $cache = Join-Path $root 'npm-cache'
+          $public = Join-Path $root 'public'
+          New-Item -ItemType Directory -Path $apertureHome,$cache,$public -Force | Out-Null
+          $package = Join-Path $root 'aperture.tgz'
+          Invoke-WebRequest $env:PACKAGE_URL -OutFile $package
+          if ((Get-FileHash $package -Algorithm SHA256).Hash.ToLowerInvariant() -ne $env:PACKAGE_SHA256) { throw 'Package identity mismatch.' }
+          $executionLog = Join-Path $root 'execution.log'
+          $oldPreference = $ErrorActionPreference
+          $ErrorActionPreference = 'Continue'
+          & npx.cmd --yes --cache $cache "--package=$package" aperture setup `
+            --home $apertureHome --model $env:MODEL_URL --context 2048 --parallel 1 --cpu `
+            --allow-scan --allow-network --allow-download --allow-install --allow-run `
+            --prompt 'What is 6 multiplied by 7? Reply with the two digits only.' --tokens 8 --seconds 600 2>&1 | Tee-Object -FilePath $executionLog
+          $executionExit = $LASTEXITCODE
+          $ErrorActionPreference = $oldPreference
+          $summaryFile = Get-ChildItem (Join-Path $apertureHome 'runs') -Filter summary.json -Recurse | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if (-not $summaryFile) { throw 'No summary was retained.' }
+          $summary = Get-Content -Raw $summaryFile.FullName | ConvertFrom-Json
+          $trial = $summary.trials[0]
+          $diagnostic = [ordered]@{
+            schema='aperture-diagnostic/windows-completion@1'; observedAt=(Get-Date).ToUniversalTime().ToString('o')
+            release=[ordered]@{version='0.4.5';packageSHA256=$env:PACKAGE_SHA256}
+            executionExit=$executionExit; summaryStatus=$summary.status; completed=$summary.completed
+            trial=[ordered]@{status=$trial.status;detail=$trial.result}
+            logSHA256=(Get-FileHash $executionLog -Algorithm SHA256).Hash.ToLowerInvariant()
+          }
+          $diagnostic | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $public 'windows-completion.json') -Encoding utf8
+          Write-Host ('APERTURE_WINDOWS_COMPLETION ' + ($diagnostic | ConvertTo-Json -Depth 20 -Compress))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aperture-windows-completion-diagnostic
+          path: ${{ runner.temp }}/windows-completion/public
+          if-no-files-found: error
+          retention-days: 14
+  mac-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Compare pinned runtime installation modes
+        shell: pwsh
+        env:
+          NODE_LINE: ${{ matrix.node }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP ('mac-runtime-' + $env:NODE_LINE)
+          $public = Join-Path $root 'public'
+          New-Item -ItemType Directory -Path $public -Force | Out-Null
+          $npmMeta = npm view node-llama-cpp@3.20.0 version optionalDependencies dist --json | ConvertFrom-Json
+          $records = @()
+          foreach ($mode in @('aperture-exact','scripts-with-skip','normal-upstream')) {
+            $directory = Join-Path $root $mode
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $directory 'package.json') -Value '{"private":true,"type":"module"}' -Encoding utf8
+            $env:NODE_LLAMA_CPP_SKIP_DOWNLOAD = if ($mode -eq 'normal-upstream') { $null } else { 'true' }
+            $arguments = @('install','--prefix',$directory,'node-llama-cpp@3.20.0','--save-exact','--no-audit','--no-fund')
+            if ($mode -eq 'aperture-exact') { $arguments += '--ignore-scripts' }
+            $installLog = Join-Path $directory 'install.log'
+            & npm @arguments 2>&1 | Tee-Object -FilePath $installLog
+            $installExit = $LASTEXITCODE
+            $probeScript = @'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import {createRequire} from 'node:module';
+          import {pathToFileURL} from 'node:url';
+          const directory=process.argv[1];
+          const require=createRequire(path.join(directory,'package.json'));
+          const record={platform:process.platform,arch:process.arch,node:process.version,installed:[],probes:{}};
+          const scope=path.join(directory,'node_modules','@node-llama-cpp');
+          if(fs.existsSync(scope))for(const name of fs.readdirSync(scope)){
+            const metaPath=path.join(scope,name,'package.json');
+            let meta=null;try{meta=JSON.parse(fs.readFileSync(metaPath,'utf8'));}catch{}
+            const files=[];for(const candidate of ['bins','bin','llama','dist']){const p=path.join(scope,name,candidate);if(fs.existsSync(p))files.push(candidate);}
+            record.installed.push({name,version:meta?.version??null,os:meta?.os??null,cpu:meta?.cpu??null,files});
+          }
+          try{
+            const api=await import(pathToFileURL(require.resolve('node-llama-cpp')).href);
+            for(const gpu of [false,'metal']){
+              const key=gpu===false?'cpu':'metal';let llama;
+              try{llama=await api.getLlama({gpu,skipDownload:true,logLevel:'error'});record.probes[key]={status:'INITIALIZED',gpuNames:await llama.getGpuDeviceNames(),vram:await llama.getVramState(),ram:await llama.getRamState()};}
+              catch(e){record.probes[key]={status:'FAILED',name:e.name,code:e.code??null,message:e.message,stack:e.stack};}
+              finally{await llama?.dispose?.();}
+            }
+          }catch(e){record.import={status:'FAILED',name:e.name,message:e.message,stack:e.stack};}
+          console.log('APERTURE_MAC_RUNTIME '+JSON.stringify(record));
+          '@
+            $probe = Join-Path $directory 'probe.mjs'
+            Set-Content -LiteralPath $probe -Value $probeScript -Encoding utf8
+            $probeOutput = & node $probe $directory 2>&1 | Out-String
+            $probeExit = $LASTEXITCODE
+            $marker = ($probeOutput -split "`r?`n" | Where-Object { $_.StartsWith('APERTURE_MAC_RUNTIME ') } | Select-Object -Last 1)
+            $probeRecord = if ($marker) { ($marker.Substring('APERTURE_MAC_RUNTIME '.Length) | ConvertFrom-Json) } else { [ordered]@{probeOutput=$probeOutput} }
+            $records += [ordered]@{mode=$mode;installExit=$installExit;installLogSHA256=(Get-FileHash $installLog -Algorithm SHA256).Hash.ToLowerInvariant();probeExit=$probeExit;probe=$probeRecord}
+          }
+          $env:NODE_LLAMA_CPP_SKIP_DOWNLOAD = $null
+          $result = [ordered]@{schema='aperture-diagnostic/mac-runtime@1';observedAt=(Get-Date).ToUniversalTime().ToString('o');nodeLine=$env:NODE_LINE;os=(sw_vers -productVersion);machine=(uname -m);npmMetadata=$npmMeta;modes=$records}
+          $result | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $public 'mac-runtime.json') -Encoding utf8
+          Write-Host ('APERTURE_MAC_RUNTIME_MATRIX ' + ($result | ConvertTo-Json -Depth 20 -Compress))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aperture-mac-runtime-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/mac-runtime-${{ matrix.node }}/public
+          if-no-files-found: warn
+          retention-days: 14
