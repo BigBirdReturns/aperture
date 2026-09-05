@@ -109,3 +109,9 @@ The selected legacy Ollama Qwen3.5 GGUF blob with three RoPE dimension sections 
 Automatic fitting is conservative and may select zero GPU layers. Explicit layer placement is available for controlled tuning. Storage bus names and nominal link rates are observations, not measured throughput. Physical RAM, shared graphics allocations, pagefile capacity, separate GPUs, and drives are never presented as one fungible memory pool.
 
 See [VERIFICATION.md](VERIFICATION.md) for the exact native observations and retained limitations.
+
+## Windows CUDA runtime libraries
+
+If the pinned CUDA binary fails to initialize, Aperture checks a bounded set of installed CUDA toolkit and Ollama library directories before the existing automatic Vulkan fallback. A complete CUDA library set must still pass the native runtime compatibility probe on the selected GPU. The successful library directory is applied only to child processes, including resumed chats; no driver, machine PATH, existing engine, model file, or context setting is changed. No DLLs are downloaded or bundled by this correction.
+
+An explicitly trusted local library directory can be selected through `APERTURE_CUDA_LIBRARY_DIR`. Relative paths, UNC paths and multiple-directory PATH strings are excluded from discovery. Existing `CUDA_PATH`/versioned toolkit variables and installed Ollama executable locations are inspected without recursive disk searches. Missing or incompatible libraries remain a visible CUDA initialization failure. NVIDIA hardware detection alone does not prove the required libraries exist.
