@@ -22,6 +22,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install -r docs/requirements.txt -r docs/requirements-browser.txt
       - run: python -m playwright install --with-deps chromium
+      - run: python -m unittest discover -s tools -p "test_public_release.py" -v
       - run: python tools/build_docs.py --out _site
       - run: python tools/check_docs.py _site
       - run: python tools/check_docs_browser.py _site --out "${{ runner.temp }}/docs-browser"
@@ -48,3 +49,43 @@ jobs:
       - name: Deploy reviewed static site
         id: deployment
         uses: actions/deploy-pages@v4
+  verify-public:
+    name: Verify public site and install command
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/published-bundle
+      - name: Check public bytes, social card, package identity and fresh-cache install
+        run: >-
+          python tools/check_public_release.py
+          --artifact "${{ runner.temp }}/published-bundle/artifact.tar"
+          --out "${{ runner.temp }}/public-release-check"
+          --install
+      - run: python -m pip install -r docs/requirements-browser.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Exercise the deployed HTTPS site in Chromium
+        run: >-
+          python tools/check_docs_browser.py
+          "${{ runner.temp }}/public-release-check/expected"
+          --base-url https://bigbirdreturns.github.io/aperture
+          --out "${{ runner.temp }}/public-release-check/browser"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-release-checks
+          path: ${{ runner.temp }}/public-release-check
+          retention-days: 14

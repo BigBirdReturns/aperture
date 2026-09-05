@@ -4,7 +4,7 @@ The documentation and numerical runtime have separate release paths. Publishing 
 
 ## Build the documentation
 
-Use a separate checkout and a local Python environment. Source pages remain readable as Markdown on GitHub. The static build uses no external fonts, analytics, or third-party JavaScript.
+Use a separate checkout and a local Python environment. Source pages remain readable as Markdown on GitHub. The static build uses no external fonts, analytics, or third-party JavaScript. Generated text uses LF line endings on every platform so Windows and Linux builds can be compared byte for byte.
 
 ```sh
 python -m venv .venv-docs
@@ -30,7 +30,16 @@ Resolve the exact release commit and actual package asset first. Update the vers
 
 The documentation workflow builds and checks the site on a branch and pull request. Only a non-pull-request run on `main` uploads the reviewed `_site` directory to GitHub Pages. Runtime checks run separately. Do not publish worktree contents, raw local receipts, model weights, credentials, or font files.
 
-After deployment, inspect the actual HTTPS site, package link and checksum, search index, command clipboard, and a missing URL. Set the repository homepage to the site only once the site responds correctly. The website's social-preview metadata is separate from GitHub's repository social-preview upload setting.
+After deployment, the same workflow verifies every public file against its uploaded Pages artifact, checks the canonical URL and social-card metadata, verifies the release package hash and embedded version, and runs the public command with `--version` in a fresh npm cache. It then exercises the actual HTTPS site in Chromium, including search, four real clipboard combinations, installation navigation, keyboard access, no-JavaScript reading, and missing-page recovery. A failed public check makes the workflow fail even when the deployment step succeeded. Evidence is retained in the `public-release-checks` workflow artifact for 14 days. These checks do not run a model or establish hardware support.
+
+For a separate verification of an unchanged live deployment, build `_site`, then run:
+
+```sh
+python tools/check_public_release.py --site _site --out public-check --install
+python tools/check_docs_browser.py _site --base-url https://bigbirdreturns.github.io/aperture --out public-check/browser
+```
+
+The package check disables installation lifecycle scripts and keeps its npm cache and application home isolated. It verifies an already published package; it does not create a release or change an installed model. Set the repository homepage to the site only once the site responds correctly. The website's social-preview metadata is separate from GitHub's repository social-preview upload setting.
 
 ## Report an issue
 
