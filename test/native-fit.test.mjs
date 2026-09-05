@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {assessFit, fitBudgets, compareRequirements, explainFit, requireFit} from '../lib/fit-policy.mjs';
+import {assessFit, fitBudgets, compareRequirements, explainFit, requireFit, estimateGuardBytes, VRAM_ESTIMATE_GUARD_CAP_BYTES} from '../lib/fit-policy.mjs';
 import {stageFitHeaders, prepareNativeFit} from '../lib/native-fit.mjs';
 import {executePlan} from '../lib/wizard.mjs';
 import {nativeOptions} from '../lib/native-session.mjs';
@@ -31,6 +31,25 @@ test('automatic fit searches layers and keeps fixed context and batch', async ()
 });
 test('payload larger than GPU budget can still fit split execution', async () => {
   const fit = await runFit(); assert.ok(fit.tensorPayloadBytes > fit.budgets.vram); requireFit(fit);
+});
+test('automatic fit retains a bounded GPU estimate guard', async () => {
+  const GiB = 1024 ** 3, raw = 6 * GiB, p = plan();
+  p.method.ramBudgetBytes = 10 * GiB; p.method.gpuBudgetBytes = raw;
+  const guard = estimateGuardBytes(raw);
+  assert.equal(guard, VRAM_ESTIMATE_GUARD_CAP_BYTES);
+  const i = {totalLayers: 2, modelSize: 9 * GiB,
+    estimateModelResourceRequirementsV2: async ({gpuLayers}) => ({
+      cpuRam: GiB, gpuVram: gpuLayers === 2 ? raw - 1 : raw - guard - 1
+    }),
+    estimateContextResourceRequirementsV2: async () => ({cpuRam: 0, gpuVram: 0})};
+  const fit = await runFit(p, i);
+  assert.equal(fit.budgets.observedVram, raw);
+  assert.equal(fit.budgets.vram, raw - guard);
+  assert.equal(fit.candidates[0].fits, false);
+  assert.equal(fit.selected.gpuLayers, 1);
+});
+test('small GPU budgets use a proportional estimate guard', () => {
+  assert.equal(estimateGuardBytes(1000), 50);
 });
 test('explicit layer count is assessed once and never reduced', async () => {
   const p = plan(); p.method.gpuLayers = 3; const fit = await runFit(p);
