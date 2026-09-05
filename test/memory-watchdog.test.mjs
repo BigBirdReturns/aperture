@@ -6,7 +6,7 @@ import {ApertureError} from '../lib/common.mjs';
 import {observeSystemMemory,pressureReason,startSystemMemoryWatchdog,watchdogPolicy,abortFailure} from '../lib/memory-watchdog.mjs';
 
 const plan=(overrides={})=>({machine:{memory:{basis:'OS physical memory'}},method:{reserveBytes:1000},...overrides});
-const observation=(available=2000,rss=0)=>({observedAt:new Date().toISOString(),availableBytes:available,physicalAvailableBytes:available,cgroupAvailableBytes:null,processRssBytes:rss,basis:'test'});
+const observation=(available=2000,rss=0)=>({observedAt:new Date().toISOString(),availableBytes:available,physicalAvailableBytes:available,rawPhysicalAvailableBytes:available,macPressureAvailableBytes:null,macPressureFreePercent:null,macPressureStatus:null,cgroupAvailableBytes:null,processRssBytes:rss,basis:'test'});
 async function waitFor(predicate,limit=500) {
   const end=Date.now()+limit;
   while(Date.now()<end){if(predicate())return;await sleep(5);}
@@ -22,8 +22,44 @@ test('system observation uses physical availability when no cgroup limit is pres
   const x=await observeSystemMemory({platform:'linux',freeMemory:()=>5000,rss:()=>9000,readCgroup:async()=>null});
   assert.equal(x.availableBytes,5000);assert.equal(x.cgroupAvailableBytes,null);
 });
+test('macOS observation uses pressure-aware reclaimable headroom rather than raw free pages alone',async()=>{
+  let request=null;
+  const x=await observeSystemMemory({
+    platform:'darwin',freeMemory:()=>117063680,totalMemory:()=>7516192768,rss:()=>9000,
+    readMacMemory:async options=>{
+      request=options;
+      return {status:'OBSERVED',availableBytes:6313601925,pressureFreePercent:84};
+    }
+  });
+  assert.deepEqual(request,{totalBytes:7516192768,rawFreeBytes:117063680});
+  assert.equal(x.availableBytes,6313601925);
+  assert.equal(x.physicalAvailableBytes,6313601925);
+  assert.equal(x.rawPhysicalAvailableBytes,117063680);
+  assert.equal(x.macPressureAvailableBytes,6313601925);
+  assert.equal(x.macPressureFreePercent,84);
+  assert.equal(x.macPressureStatus,'OBSERVED');
+  assert.match(x.basis,/memory_pressure/);
+});
+test('macOS raw fallback remains visible when pressure-aware observation is unavailable',async()=>{
+  const x=await observeSystemMemory({
+    platform:'darwin',freeMemory:()=>5000,totalMemory:()=>10000,rss:()=>1,
+    readMacMemory:async()=>({status:'FALLBACK',availableBytes:5000,pressureFreePercent:null})
+  });
+  assert.equal(x.availableBytes,5000);
+  assert.equal(x.rawPhysicalAvailableBytes,5000);
+  assert.equal(x.macPressureAvailableBytes,null);
+  assert.equal(x.macPressureStatus,'FALLBACK');
+  assert.match(x.basis,/OS physical/);
+});
 test('invalid reserve is refused before monitoring',()=>{
   assert.throws(()=>watchdogPolicy({method:{reserveBytes:0}}),e=>e.code==='MEMORY_POLICY');
+});
+test('watchdog policy preserves the macOS pressure source used for admission',()=>{
+  const policy=watchdogPolicy(plan({machine:{memory:{basis:'macOS memory_pressure -Q available percentage'}},method:{reserveBytes:1000}}));
+  assert.equal(policy.requireMacPressure,true);
+  const reason=pressureReason(observation(5000,1),policy);
+  assert.equal(reason.code,'MEMORY_MONITOR_FAILED');
+  assert.match(reason.message,/macOS pressure-aware/);
 });
 test('RSS above the allocation budget is not system pressure',()=>{
   assert.equal(pressureReason(observation(2000,100000),watchdogPolicy(plan())),null);
@@ -49,6 +85,13 @@ test('watchdog aborts with the typed system-pressure cause',async()=>{
 test('loss of an admission-time cgroup observation fails closed',async()=>{
   const controller=new AbortController();
   const p=plan({machine:{memory:{basis:'OS physical memory and cgroup-v2 limit'}},method:{reserveBytes:1000}});
+  const watchdog=startSystemMemoryWatchdog(p,controller,{intervalMs:10,observe:async()=>observation(5000,1)});
+  await waitFor(()=>controller.signal.aborted);await watchdog.stop();
+  assert.equal(controller.signal.reason.code,'MEMORY_MONITOR_FAILED');
+});
+test('loss of an admission-time macOS pressure observation fails closed',async()=>{
+  const controller=new AbortController();
+  const p=plan({machine:{memory:{basis:'macOS memory_pressure available capacity'}},method:{reserveBytes:1000}});
   const watchdog=startSystemMemoryWatchdog(p,controller,{intervalMs:10,observe:async()=>observation(5000,1)});
   await waitFor(()=>controller.signal.aborted);await watchdog.stop();
   assert.equal(controller.signal.reason.code,'MEMORY_MONITOR_FAILED');
