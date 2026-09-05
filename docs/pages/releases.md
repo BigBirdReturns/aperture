@@ -1,6 +1,15 @@
 # Releases and maintenance
 
-Documentation here targets **Aperture 0.4.3**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+Documentation here targets **Aperture 0.4.4**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+
+
+## 0.4.4: bounded Windows hardware discovery
+
+Core Windows observations now survive a slow extended storage or network provider. CPU, memory, display, NPU and external-link discovery run separately from disks, volumes, partitions and physical network inventory, with independent bounds and one shared PnP enumeration.
+
+Generation and persistent chat now protect the admitted system-memory reserve using current physical availability; Linux also retains an admission-time cgroup-v2 ceiling. Process RSS remains diagnostic, which corrects a reproduced false abort on memory-mapped model pages. The pinned Qwen2.5-14B Q4_K_M tensor payload exceeded the RTX 4060's reported physical memory by 396,402,688 bytes. Qualified automatic CPU/GPU splits selected 27 or 28 of 49 layers as current headroom changed, preserved 2,048-token context and one sequence, and returned `42` without selecting the separate 3090 for model execution.
+
+A separate public-package passage recorded 0.4.3 clean-cache installation, pre-download fit, provider-hash verification, CUDA generation, two-turn context retention and clean exit on an additional Windows host. That observation motivated the scan repair and remains separately attributable. The 0.4.4 physical-capacity result establishes one supported configuration, not broad model compatibility, optimal placement, task quality, or throughput leadership.
 
 ## 0.4.3: fresh runtime installation
 
@@ -27,14 +36,6 @@ Released September 5, 2026 UTC. Commit `463aa08a0f70cf9cf34cea92a886aaa2200d1a5b
 This release brought hardware discovery into model selection and execution, including integrated/discrete graphics, neural-device candidates, RAM and commit observations, storage, and available link information. It added isolated device binding, explicit fallback reporting, non-additive shared-memory budgets, and observed layer/context reporting.
 
 The retained native record includes CPU, Intel Vulkan, NVIDIA Vulkan, Linux acquisition and execution, and a partial-offload trial above the 4060's **available** VRAM. [Versioned release record](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.0).
-
-## In development: Windows scan resilience and physical-capacity execution
-
-The pinned 14B Q4_K_M checkpoint has now completed candidate execution on the RTX 4060 at 2,048-token context and one sequence. Its 8,982,142,976-byte tensor payload exceeded the device's reported physical memory; native fit placed 30 of 49 layers on the 4060 and the model returned `42`. The separate 0.4.2 refusal under constrained budgets remains valid evidence of pre-download admission.
-
-The run also exposed and repaired an RSS-based watchdog false positive. The candidate now protects the plan's system-memory reserve using current physical availability, and Linux retains cgroup-v2 headroom when it controlled admission. This code and evidence remain unreleased until a successor versioned package is issued.
-
-The published 0.4.3 package has now completed a clean-cache CUDA generation and two-turn chat passage on a separate Windows host while preserving an unrelated workload on the host's other GPU. The run also exposed a monolithic Windows inventory timeout. A candidate repair separates core hardware facts from extended storage and network observations and preserves whichever bounded group completes. This scan repair remains unreleased until it appears in a later versioned package.
 
 ## Updating and rolling back
 

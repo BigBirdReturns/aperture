@@ -29,7 +29,7 @@ Windows GPU workers initially stalled during runtime import when inheriting the 
 
 ## Repeatable checks
 
-`npm test` exercises 154 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+`npm test` exercises 156 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
 
 ## CUDA discovery correction, 0.4.1
 
@@ -78,6 +78,13 @@ The first detailed Windows inventory attempt exceeded the release's monolithic 2
 The unreleased scan candidate splits core and extended Windows inventory into independently bounded concurrent groups, performs one PnP enumeration for NPU and external-link rows, preserves core facts when extended storage or network inventory fails, and reports the whole inventory as unavailable only when both groups fail. All 141 branch source and control tests pass, including three public-receipt controls. On the same host, a subsequent real scan returned the complete inventory in 7.946 seconds with no errors. The providers had already been exercised, so that duration is an observed warm-provider result rather than a clean-machine latency guarantee.
 
 The [public receipt](verification/windows-public-first-use-20260905.json) excludes local paths, prompts, GPU UUIDs, and model weights. The complete records remain in local custody. This passage adds one Windows machine and one supported model to the evidence. It does not establish broad task quality, a decode-only throughput result, native Mac support, NPU execution, or successful inference with a checkpoint larger than the selected GPU's physical capacity.
+## 0.4.4 release qualification: bounded Windows scan and CUDA regression
+
+Release 0.4.4 separates core Windows CPU, memory, graphics, NPU and external-link discovery from extended disk, volume, partition and network inventory. The bounded groups run concurrently and share one PnP enumeration. A failed extended group now leaves completed core facts visible, while both groups must fail before the operating-system inventory is classified unavailable. On the second Windows host, the repaired scan returned complete observations with no errors in 7.946 seconds after the providers had already been exercised. That duration is a warm-provider observation, not a clean-machine latency guarantee.
+
+An earlier 68,790-byte scan candidate with SHA-256 `268aef0268db0cd008678509d1eabed7dd72c432387254c21c8af66a30feb833` was installed through a new npm cache and empty Aperture home. It installed node-llama-cpp 3.20.0 with 123 packages, retained Qwen2.5-0.5B-Instruct Q4_K_M at 491,400,032 bytes and SHA-256 `74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db`, preserved 2,048 context and one sequence, and initialized CUDA on the selected idle RTX 3090. Native fit selected 25 GPU layers; loading read back CUDA, 25 GPU layers and 2,048 context. A subsequent arithmetic regression generated `42` and exited 0. No Aperture-owned process remained, and the unrelated workload on the other GPU remained in place.
+
+The first operator attempt referenced a stale local model path and exited 2 before runtime installation. After correcting that path, an initial generation completed but did not follow an arbitrary exact-phrase instruction; it remains generated but not task-qualified. The arithmetic regression is the narrow expected-output check. Neither result establishes broad task quality, a decode-only throughput figure, native Mac support, NPU execution, or successful execution above physical GPU capacity. The sanitized release-candidate receipt is retained with the candidate assets; private paths, prompts, GPU UUIDs and weights are excluded.
 
 ## System-headroom watchdog and physical-capacity candidate
 
@@ -90,7 +97,9 @@ The complete pinned three-shard checkpoint was then independently SHA-256 verifi
 
 The run's internal monitor sampled 34 times. Minimum available system memory was 4,188,659,712 bytes against a 1,892,083,630-byte reserve, while peak process RSS was 9,228,959,744 bytes. An independent sampler observed at least 7,304,437,760 bytes of Windows commit headroom, up to 7,144 MiB in use on the 4060, and zero utilization on the separate RTX 3090. This establishes one real CPU/GPU execution above the selected GPU's physical capacity. It does not establish optimal placement, general model compatibility, task quality, or a controlled throughput advantage.
 
-All 154 source/control tests and the clean package-install check passed. A persistent CPU chat also retained the word `ORCHID` across two turns and exited 0 at context 2048. Compact public evidence is in `verification/windows-physical-capacity-20260905.json`.
+All 156 source/control tests and the clean package-install check passed. A persistent CPU chat also retained the word `ORCHID` across two turns and exited 0 at context 2048. Compact public evidence is in `verification/windows-physical-capacity-20260905.json`.
+
+The final package-bearing source commit `97f9f538062d663c499df064a550b91f071acfd6` produced two byte-identical 70,601-byte tarballs with SHA-256 `0c3ddb0b987543affb096b22fa6f48deb03c475aaaca654dc4a8383312accdb4`. The exact tarball was installed through a fresh npm cache and reran the pinned 14B checkpoint on the isolated RTX 4060 route. Native fit selected 28 layers; loading read back 28 layers and 2,048-token context, then returned `42` and exited 0. The watchdog observed a 3,492,032,512-byte minimum available-memory floor against its 1,766,779,535-byte reserve. An independent 66-sample monitor observed at least 4,034,019,328 bytes available, and no Aperture-owned process remained afterward. The versioned release asset must match this package digest.
 
 ## Separate Linux public first-use passage
 

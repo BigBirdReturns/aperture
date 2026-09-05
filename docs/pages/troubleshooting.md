@@ -10,7 +10,7 @@ A GitHub repository package requires Git. The release-package command in [Get st
 
 ## I received an answer, but the model will not load
 
-The setup answer is provisional. In 0.4.3, native GGUF fitting precedes remote-weight acquisition and repeats after integrity checks before loading. Check available RAM, Windows commit headroom, the selected GPU and requested context. A refusal names the estimated resource shortfall without changing the model. A download completing is not successful admission.
+The setup answer is provisional. In 0.4.4, native GGUF fitting precedes remote-weight acquisition and repeats after integrity checks before loading. Check available RAM, Windows commit headroom, the selected GPU and requested context. A refusal names the estimated resource shortfall without changing the model. A download completing is not successful admission.
 
 Other workloads can change memory availability. Choose whether to close your own applications or use a different explicit configuration. Aperture does not terminate unrelated services. See [memory and placement](memory.md) for the distinction between a physical capacity, current headroom, and reserved budget.
 

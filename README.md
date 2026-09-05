@@ -4,7 +4,7 @@
 
 Aperture inspects your hardware with permission, reads the model link or local files you choose, and explains a memory-aware configuration. For compatible GGUF models, it can start a local chat or bounded experiment using an existing inference runtime, including CPU/GPU split execution when the checkpoint exceeds available VRAM.
 
-**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.3](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.3)** · [MIT license](LICENSE)
+**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.4](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.4)** · [MIT license](LICENSE)
 
 ## Start with one command
 
@@ -13,16 +13,16 @@ Install [Node.js LTS](https://nodejs.org/en/download) first. Requires Node.js 20
 **Windows PowerShell**
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz aperture
 ```
 
 **Linux / macOS terminal**
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz aperture
 ```
 
-Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.3` instead. Distribution is through GitHub, not the npm registry namespace.
+Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.4` instead. Distribution is through GitHub, not the npm registry namespace.
 
 ## The workflow
 
@@ -55,7 +55,7 @@ The managed GGUF path selects one compatible CUDA or Vulkan device, Apple Metal,
 
 ## Verification
 
-[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. Release 0.4.3 retains the earlier split above **available** VRAM and its separate Windows first-use passage. A current development candidate now records Qwen2.5-14B Q4_K_M generating `42` with 30 of 49 layers on an RTX 4060 at 2,048-token context; the native tensor payload exceeds the device's reported physical memory. Its system-headroom watchdog also completed the exact plan that the former RSS proxy aborted. See the path-free [physical-capacity receipt](verification/windows-physical-capacity-20260905.json) and the separate-host [Linux public first-use receipt](verification/linux-public-first-use-20260905.json). These observations remain candidate evidence until a successor package is released.
+[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. Release 0.4.3 retains the earlier split above **available** VRAM and its separate Windows first-use passage. Release 0.4.4 adds Qwen2.5-14B Q4_K_M generating `42` through a CPU/RTX 4060 split at 2,048-token context while the 8,982,142,976-byte tensor payload exceeds the device's reported physical memory. Qualified automatic runs selected 27 or 28 of 49 layers as admission-time headroom changed, and the system-headroom watchdog completed the exact plan that the former RSS proxy aborted. See the path-free [physical-capacity receipt](verification/windows-physical-capacity-20260905.json) and the separate-host [Linux public first-use receipt](verification/linux-public-first-use-20260905.json). These observations establish that bounded configuration, not general compatibility, optimal placement, or throughput leadership.
 
 ```sh
 npm test
