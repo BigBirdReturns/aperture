@@ -69,6 +69,11 @@ def read_expected(folder: Path) -> dict[str, bytes]:
 
 
 def validate_release(meta: dict) -> None:
+    if not isinstance(meta, dict):
+        raise ValueError("Release identity must be an object")
+    for field in ("version", "tag", "base_url", "repository", "package_url", "package_sha256", "release_commit"):
+        if not isinstance(meta.get(field), str) or not meta[field].strip():
+            raise ValueError(f"Release identity is incomplete: {field}")
     version = meta.get("version", "")
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", version):
         raise ValueError("Invalid release version")
@@ -206,11 +211,14 @@ def main() -> int:
     source.add_argument("--site", type=Path)
     source.add_argument("--artifact", type=Path)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--preflight", action="store_true", help="Validate the published package before deploying these pages")
     parser.add_argument("--install", action="store_true", help="Run the public command with --version")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     report = {"schema": "aperture-public-release-check/1", "status": "FAILED",
               "native_inference_performed": False,
+              "phase": "BEFORE_DEPLOYMENT" if args.preflight else "AFTER_DEPLOYMENT",
+              "live_site_checked": False,
               "checked_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
               "workflow_commit": os.getenv("GITHUB_SHA")}
     try:
@@ -224,7 +232,8 @@ def main() -> int:
         check_social(files["index.html"])
         report.update({"site": BASE_URL + "/", "version": meta["version"],
                        "release_commit": meta["release_commit"]})
-        report["files"] = compare_live(files)
+        report["files"] = [] if args.preflight else compare_live(files)
+        report["live_site_checked"] = not args.preflight
         report["package"] = verify_package(meta, args.out)
         report["installation"] = verify_install(meta, args.out) if args.install else {"status": "NOT_RUN"}
         report["status"] = "PASSED"
