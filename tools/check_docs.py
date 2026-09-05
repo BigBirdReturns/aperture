@@ -66,7 +66,7 @@ def main():
         missing=options-set(re.findall(r'--[a-z][a-z-]*',reference))
         require(not missing,'Undocumented CLI flags: '+str(sorted(missing)))
         runtime_checked=True
-    require(meta['native_prefit_before_download'] is False,'Update admission copy/tests deliberately if released behavior changes')
+    require(meta['native_prefit_before_download'] is True,'Release 0.4.2 documentation must describe the native pre-download assessment')
     report={'pages_checked':len(pages),'local_links_checked':checked,'runtime_help_checked':runtime_checked,'release':meta['version'],'failures':fail}
     print(json.dumps(report,indent=2));return bool(fail)
 if __name__=='__main__':sys.exit(main())

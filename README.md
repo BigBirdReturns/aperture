@@ -4,7 +4,7 @@
 
 Aperture inspects your hardware with permission, reads the model link or local files you choose, and explains a memory-aware configuration. For compatible GGUF models, it can start a local chat or bounded experiment using an existing inference runtime, including CPU/GPU split execution when the checkpoint exceeds available VRAM.
 
-**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.1](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.1)** · [MIT license](LICENSE)
+**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.2](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.2)** · [MIT license](LICENSE)
 
 ## Start with one command
 
@@ -13,16 +13,16 @@ Install [Node.js LTS](https://nodejs.org/en/download) first. Requires Node.js 20
 **Windows PowerShell**
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture
 ```
 
 **Linux / macOS terminal**
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture
 ```
 
-Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.1` instead. Distribution is through GitHub, not the npm registry namespace.
+Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.2` instead. Distribution is through GitHub, not the npm registry namespace.
 
 ## The workflow
 
@@ -30,13 +30,13 @@ Approve the read-only scan, paste your model link or drag in a local file, and c
 
 Use `/new` for a fresh chat and `/exit` to release the model. Saved configurations are listed with `aperture list` and reopened with `aperture chat ANSWER.json`; retain the `npx --package=… aperture` prefix when the executable is not installed globally.
 
-> **Current first-use limit:** the configuration shown before download is provisional. In 0.4.1, remote weights may be acquired before the definitive native fit check. Review available resources before approving a large download. Moving native fit ahead of acquisition is pending, not a released feature.
+> ### Native fit before acquisition
 
-### Development: native fit before acquisition
+Before asking to acquire remote GGUF weights, Aperture obtains permission for the pinned runtime and assesses the complete selected tensor tables. Bounded prefixes are capped at 8 MiB per shard and 64 MiB total. A failed or unavailable assessment stops acquisition with the model, quantization, context, sequence count, and explicit device/layer requirements unchanged. Automatic placement checks layer counts for the highest estimated fitting count, not optimal speed.
 
-The development code now assesses GGUF memory requirements before asking to acquire remote weights. Runtime installation still needs separate permission. The assessor reads bounded prefixes from all selected shards, capped at 8 MiB each and 64 MiB total. Prefixes may include initial tensor bytes; they do not acquire the full checkpoint. Context, sequence count, selected device, and explicit GPU-layer requests are preserved. Automatic placement searches for the highest estimated fitting layer count, not an optimal-speed configuration.
+After download and complete integrity hashing, generation and chat repeat the assessment against refreshed hardware immediately before loading. Each experiment trial rehashes and reassesses independently. A later refusal preserves earlier trial results. Native memory checks and actual GPU-layer/context readback remain enabled. Shared RAM and independent GPUs are not pooled.
 
-A non-fitting or unavailable assessment stops acquisition and explains the resource shortfall. After acquisition, the same assessment runs again against refreshed observations before loading, with native memory checks still enabled and actual GPU-layer readback checked. Shared RAM remains non-additive. These are pinned-runtime estimates and may use its estimation fallback; a fit is not architecture or performance qualification. `--answer-only` remains a lightweight candidate answer without native installation or assessment. The versioned 0.4.1 commands above do not include this development change; see the candidate observations in [VERIFICATION.md](VERIFICATION.md).
+These are pinned-runtime estimates, not architecture or throughput guarantees. Prefixes can include initial tensor bytes but do not acquire the full checkpoint. `--answer-only` remains a lightweight provisional answer without native installation or assessment. See [VERIFICATION.md](VERIFICATION.md) for native observations and retained limits.
 
 ## What is available
 
@@ -55,7 +55,7 @@ The managed GGUF path selects one compatible CUDA or Vulkan device, Apple Metal,
 
 ## Verification
 
-[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. The reported 4060 split exceeds **available** VRAM, not its nominal physical capacity. A successful beyond-physical-capacity run is not yet established. The 0.4.1 record also includes actual RTX 3090 CUDA generation and two-turn continuity after the installed-library discovery correction.
+[VERIFICATION.md](VERIFICATION.md) records native runs separately from source/control tests. The reported 4060 split exceeds **available** VRAM, not its nominal physical capacity. A successful beyond-physical-capacity run is not yet established. The earlier 0.4.1 record also includes actual RTX 3090 CUDA generation and two-turn continuity after the installed-library discovery correction.
 
 ```sh
 npm test

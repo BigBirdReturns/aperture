@@ -9,13 +9,13 @@ Install a current [Node.js LTS release](https://nodejs.org/en/download) first. A
 **Windows PowerShell**
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture
 ```
 
 **Linux or macOS terminal**
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture
 ```
 
 Windows and Linux have recorded native runs. The macOS adapter is implemented, but native Mac inference has not been verified by this project. Check the [support matrix](support.md) before selecting a platform or model.
@@ -23,7 +23,7 @@ Windows and Linux have recorded native runs. The macOS adapter is implemented, b
 With Git installed, the shorter, version-pinned equivalent is:
 
 ```sh
-npx --yes github:BigBirdReturns/aperture#v0.4.1
+npx --yes github:BigBirdReturns/aperture#v0.4.2
 ```
 
 Use `npx.cmd` instead of `npx` in Windows PowerShell. The package is distributed through GitHub, **not the npm registry**. Do not use `npx @bigbirdreturns/aperture` for this release.
@@ -50,7 +50,7 @@ This example is approximately 491 MB. It is a setup smoke test, not a recommenda
 
 The answer identifies your selected artifact, hardware observations, context, session count, candidate backend, memory budgets, and any known missing adapter. Context defaults to 4,096 tokens and the guided runner supports one sequence. Explicit requirements are retained.
 
-> **Important in 0.4.1:** the first answer is a provisional configuration. For a remote model, the complete weights may be downloaded before the definitive native fit check. A separate metadata-only native-fit probe exists in development, but is not part of this released command. Review the resource explanation and available storage before approving a large download. [How memory is assessed](memory.md).
+> **Native assessment in 0.4.2:** before asking to download remote GGUF weights, Aperture checks bounded model prefixes using the pinned runtime. A failed assessment stops acquisition without changing your model or context. Full integrity hashing is followed by a fresh assessment before loading. Runtime installation, metadata access, downloads and execution retain separate permissions. `--answer-only` remains provisional. [How memory is assessed](memory.md).
 
 ## Start useful work
 
@@ -63,11 +63,11 @@ In a GGUF chat, `/new` clears the current conversation and `/exit` releases the 
 Aperture prints the path of the saved answer. Use the same package prefix on a later terminal invocation:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture list
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture list
 ```
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz aperture chat "/path/to/answer.json"
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture chat "/path/to/answer.json"
 ```
 
 Replace the quoted path with the path Aperture printed. Resume only answer files you trust. To change the model, context, device, or layer count, use a new `setup` command rather than editing a saved answer to imply a previously verified configuration.

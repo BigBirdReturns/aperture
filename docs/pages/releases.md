@@ -1,6 +1,12 @@
 # Releases and maintenance
 
-Documentation here targets **Aperture 0.4.1**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+Documentation here targets **Aperture 0.4.2**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+
+## 0.4.2: native fit before download
+
+Remote GGUF execution now checks the selected model with the pinned native runtime before asking to download complete weights. Local generation, chat and every experiment trial verify integrity before refreshing native admission. Loaded placement and context are checked, and a failed later trial does not discard earlier results. The original 0.4.1 CUDA discovery repair is retained.
+
+Windows checks preserve the original 0.5B checkpoint and 2,048-token context. The larger pinned 14B checkpoint remains a separately recorded refusal under constrained memory, not a successful beyond-physical-VRAM run.
 
 ## 0.4.1 · Windows CUDA library discovery
 
@@ -20,7 +26,7 @@ The retained native record includes CPU, Intel Vulkan, NVIDIA Vulkan, Linux acqu
 
 ## In development · Native fit before acquisition
 
-The next admission change moves exact native fitting ahead of the complete remote-weight download. A metadata-only probe has identified a genuine first-use failure under constrained memory budgets. The ordinary 0.4.1 command does not yet perform that probe before downloading.
+The next physical-capacity qualification retains the pinned 14B Q4_K_M checkpoint, RTX 4060, 2,048-token context and one sequence. The 0.4.2 pre-download refusal is established separately; successful inference above physical VRAM capacity remains unverified.
 
 The intended acceptance is an admitted small checkpoint and a correctly explained resource shortfall for the larger target under the constrained conditions, followed by rechecking resources at actual load time. This is a release requirement, not a feature currently promised by the install command.
 
