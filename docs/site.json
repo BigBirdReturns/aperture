@@ -7,5 +7,7 @@
   "repository": "https://github.com/BigBirdReturns/aperture",
   "package_url": "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.1/bigbirdreturns-aperture-0.4.1.tgz",
   "reviewed": "2026-09-05",
-  "native_prefit_before_download": false
+  "native_prefit_before_download": false,
+  "package_sha256": "16fc1a69c2e00506219c73ac622873b9f9e42f609ea6e1bce1f10c25a8daa0c1",
+  "package_bytes": 66329
 }

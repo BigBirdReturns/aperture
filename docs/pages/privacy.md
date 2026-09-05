@@ -1,6 +1,6 @@
-# Privacy and experiments
+# Privacy and local data
 
-Aperture's permission boundaries are separate operations, not one blanket approval. The public site is a static guide; it does not inspect your machine, request your model files, or execute terminal commands. Its optional theme preference is stored only in your browser. Search runs against a first-party documentation index.
+Aperture's permission boundaries are separate operations, not one blanket approval. The public site is a static guide; it does not inspect your machine, request your model files, or execute terminal commands. Search runs against a first-party documentation index.
 
 ## What the application reads
 

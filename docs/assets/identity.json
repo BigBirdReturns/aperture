@@ -1,0 +1,13 @@
+{
+  "source_repository": "BigBirdReturns/axm-tools",
+  "git_blobs": {
+    "scg-pixel-mark.js": "bc9a3eb2db82b21c6fdb58acb1d017c5a48cdedf",
+    "scg.tokens.css": "5d03305a3fb7cd0982b1e34242ecc3588629f17f",
+    "SCG_MARK_CONSTITUTION.md": "6ce2a3a6262a1190764117ec04ce687a1708271c"
+  },
+  "columns": 16,
+  "rows": 18,
+  "occupied_cells": 79,
+  "reinterpretation": false,
+  "font_files_distributed": false
+}

@@ -38,7 +38,7 @@ python tools/check_docs.py _site
 
 For browser checks, install the optional dependencies in `docs/requirements-browser.txt`, install Playwright Chromium, and run `python tools/check_docs_browser.py _site`. Use `APERTURE_TEST_BROWSER` to select an existing compatible Chromium binary. Screenshots and test reports go outside source by default.
 
-The public interface follows the AXM dark ecosystem family, with readable type roles, restrained teal, explicit states, and keyboard-visible controls. See `docs/STYLE.md`. Do not mix report-poster styling into operational navigation.
+The public interface follows the SCG practice identity: bone, olive, and void; IBM Plex Sans and Mono local stacks; and the exact 79-cell sanctioned pixel dandelion. See `docs/STYLE.md`. Retain keyboard-visible controls and readable document navigation.
 
 ## Release checklist
 

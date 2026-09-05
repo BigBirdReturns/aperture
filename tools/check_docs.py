@@ -4,6 +4,8 @@ import argparse, hashlib, json, re, subprocess, sys
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+from build_docs import PAGES
+from scg_identity import validate as validate_identity
 ROOT=Path(__file__).resolve().parents[1]
 class Page(HTMLParser):
     def __init__(self):
@@ -44,7 +46,7 @@ def main():
             if u.fragment and target in pages:require(unquote(u.fragment) in pages[target].ids,f'{path.name}: missing anchor {href}')
             checked+=1
     require((site/'assets/social-preview.png').is_file(),'Social preview missing')
-    require(len(json.loads((site/'search-index.json').read_text(encoding="utf-8")))==8,'Search index does not cover all guides')
+    require(len(json.loads((site/'search-index.json').read_text(encoding="utf-8")))==len(PAGES),'Search index does not cover all guides')
     for path in [ROOT/'README.md',*list((ROOT/'docs/pages').glob('*.md'))]:
         txt=path.read_text(encoding='utf-8')
         require('\u2014' not in txt,f'{path.name}: em dash outside house voice')
@@ -52,6 +54,8 @@ def main():
         for version in re.findall(r'bigbirdreturns-aperture-([\d.]+)\.tgz',txt):
             require(version==meta['version'],f'{path.name}: stale package version {version}')
     reference=(ROOT/'docs/pages/reference.md').read_text(encoding='utf-8')
+    validate_identity()
+    require((site/'assets/mark.svg').read_text(encoding='utf-8').count('<rect ')==79,'Canonical 79-cell mark missing')
     runtime_checked=False
     if not args.source_only:
         pkg=json.loads((ROOT/'package.json').read_text(encoding="utf-8"))

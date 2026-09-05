@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse, html, json, re, shutil
 from pathlib import Path
+from scg_identity import render as render_identity
 from urllib.parse import urlsplit
 from markdown_it import MarkdownIt
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -13,9 +14,11 @@ PAGES = [
     ("memory", "Memory and placement", "Physical capacity, available headroom, and CPU/GPU split execution."),
     ("reference", "Command reference", "Every released command, flag, and independent permission."),
     ("troubleshooting", "Troubleshooting", "Recover from installation, download, backend, and model errors."),
-    ("privacy", "Privacy and experiments", "What is read, what is stored, and what an experiment does."),
+    ("privacy", "Privacy and local data", "What is read, retained, transmitted, and kept under your control."),
+    ("experiments", "Bounded experiments", "Run the optional comparison and interpret its local evidence."),
     ("support", "Verified support", "Implemented paths, native observations, and limits of the evidence."),
     ("releases", "Releases", "Versioned changes, pending work, and maintenance guidance."),
+    ("maintenance", "Maintenance", "Build, verify, and publish the release-bound documentation."),
 ]
 
 def slugify(text: str) -> str:
@@ -57,6 +60,7 @@ def render_markdown(source: str) -> tuple[str, list[dict], str]:
     return body, toc, text
 
 def build(output: Path):
+    render_identity()
     output = output.resolve()
     if output == ROOT or output in (ROOT / "docs", ROOT / "docs/pages"):
         raise ValueError("Choose a separate generated output directory")
@@ -81,7 +85,7 @@ def build(output: Path):
     sitemap = '<?xml version="1.0" encoding="utf-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc><lastmod>'+site['reviewed']+'</lastmod></url>' for u in urls)+'</urlset>\n'
     (output / 'sitemap.xml').write_text(sitemap,encoding='utf-8')
     # Absolute project URLs keep the error page usable at nested invalid paths.
-    (output / '404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Page not found · Aperture</title><link rel="stylesheet" href="'+site['base_url']+'/assets/site.css"><body><main class="shell section"><p class="eyebrow">Aperture documentation</p><h1>That page could not be found.</h1><p>Return to <a href="'+site['base_url']+'/">Aperture</a> or open <a href="'+site['base_url']+'/quickstart.html">Get started</a>.</p></main></body></html>',encoding='utf-8')
+    (output / '404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Page not found · Aperture</title><link rel="stylesheet" href="'+site['base_url']+'/assets/site.css"><link rel="stylesheet" href="'+site['base_url']+'/assets/scg.css"><body><main class="shell section"><p class="eyebrow">Aperture documentation</p><h1>That page could not be found.</h1><p>Return to <a href="'+site['base_url']+'/">Aperture</a> or open <a href="'+site['base_url']+'/quickstart.html">Get started</a>.</p></main></body></html>',encoding='utf-8')
     print(json.dumps({'output':str(output),'pages':len(pages)+1,'release':site['version']}))
 
 if __name__=='__main__':
