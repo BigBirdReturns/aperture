@@ -58,7 +58,6 @@ jobs:
             --context 2048 `
             --parallel 1 `
             --cpu `
-            --threads 4 `
             --allow-scan `
             --allow-network `
             --allow-download `
@@ -97,13 +96,14 @@ jobs:
             release = [ordered]@{ version = '0.4.5'; tag = 'v0.4.5'; mergeCommit = '9d40dd089f93676cad361b1679e3112b7ec4674c'; packageBytes = $packageItem.Length; packageSHA256 = $packageHash }
             freshBoundaries = [ordered]@{ npmCache = 'empty before package installation'; apertureHome = 'empty'; managedRuntime = 'new node-llama-cpp 3.20.0 installation'; modelCache = 'new pinned model download' }
             model = [ordered]@{ repository = 'Qwen/Qwen2.5-0.5B-Instruct-GGUF'; revision = '9217f5db79a29953eb74d5343926648285ec7e67'; file = $modelContent[0].name; bytes = $modelContent[0].bytes; sha256 = $modelContent[0].sha256 }
-            request = [ordered]@{ contextTokens = 2048; sequences = 1; backend = 'cpu'; threads = 4 }
+            request = [ordered]@{ contextTokens = 2048; sequences = 1; backend = 'cpu'; threads = $null }
             execution = [ordered]@{ status = $result.status; answerAssertion = '42'; answerMatched = $true; requestedContextTokens = $result.requestedContext; observedContextTokens = $result.observedContext; observedGpuLayers = $result.observedGpuLayers; runtime = $result.runtime; loadSeconds = $result.loadSeconds; generationSeconds = $result.generationSeconds; inputTokens = $result.inputTokenCount; outputTokens = $result.outputTokenCount; processExit = $executionExit }
             integrity = [ordered]@{ publicPackageDownloadedAndSHA256Verified = $true; providerModelSHA256Verified = $true; runSummarySHA256 = (Get-FileHash -LiteralPath $summaryFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant(); executionLogSHA256 = (Get-FileHash -LiteralPath $log -Algorithm SHA256).Hash.ToLowerInvariant() }
             supportReceipt = $support
-            boundaries = @('This is an ephemeral GitHub-hosted runner, not an unrelated person or a clean operating-system installation.', 'Node.js and network access were supplied by the hosted image; Aperture installed its managed runtime and downloaded a new model copy.', 'Zero GPU layers is CPU execution.', 'The arithmetic assertion is not broad task-quality or performance qualification.', 'The reduced support receipt remains fingerprintable and was produced only for this controlled hosted runner.')
+            boundaries = @('This is an ephemeral GitHub-hosted runner, not an unrelated person or a clean operating-system installation.', 'Node.js and network access were supplied by the hosted image; Aperture installed its managed runtime and downloaded a new model copy.', 'The CPU thread count was left to the pinned runtime for portability across hosted CPU allocations.', 'Zero GPU layers is CPU execution.', 'The arithmetic assertion is not broad task-quality or performance qualification.', 'The reduced support receipt remains fingerprintable and was produced only for this controlled hosted runner.')
           }
           $receipt | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $public 'first-use.json') -Encoding utf8
+          Write-Host ('APERTURE_PUBLIC_FIRST_USE ' + ($receipt | ConvertTo-Json -Depth 20 -Compress))
       - uses: actions/upload-artifact@v4
         if: always()
         with:
