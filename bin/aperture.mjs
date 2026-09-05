@@ -2,12 +2,12 @@
 import {parseArgs} from 'node:util';
 import {terminalUI} from '../lib/ui.mjs';
 import {wizard,resume,listSaved} from '../lib/wizard.mjs';
-import {positive,clean} from '../lib/common.mjs';
+import {positive,clean,localPath} from '../lib/common.mjs';
 import {VERSION} from '../lib/version.mjs';
 let ui;
 try{
   const{values,positionals}=parseArgs({allowPositionals:true,options:{
-    help:{type:'boolean',short:'h'},version:{type:'boolean',short:'v'},model:{type:'string'},context:{type:'string'},parallel:{type:'string'},cpu:{type:'boolean'},'gpu-layers':{type:'string'},
+    help:{type:'boolean',short:'h'},version:{type:'boolean',short:'v'},model:{type:'string'},context:{type:'string'},parallel:{type:'string'},cpu:{type:'boolean'},'gpu-layers':{type:'string'},backend:{type:'string'},device:{type:'string'},threads:{type:'string'},home:{type:'string'},
     'allow-scan':{type:'boolean'},'allow-network':{type:'boolean'},'answer-only':{type:'boolean'},out:{type:'string'},
     'allow-download':{type:'boolean'},'allow-install':{type:'boolean'},'allow-run':{type:'boolean'},prompt:{type:'string'},tokens:{type:'string'},seconds:{type:'string'},once:{type:'boolean'}
   }});
@@ -24,6 +24,11 @@ try{
   --context N                      Tokens per session (default 4096)
   --parallel N                     Preserve an explicit session requirement
   --cpu                            Explicit CPU-only route
+  --backend auto|cpu|cuda|vulkan|metal|npu
+                                   NPU discovery is supported; NPU execution requires an adapter
+  --device INDEX_OR_NAME           Pin one native device (Intel with Vulkan for iGPU)
+  --threads N                      CPU worker threads
+  --home DIRECTORY                 Runtime/model/answer storage destination
   --gpu-layers N                   Pin a layer count for supported GGUF execution
   --answer-only                    Print configuration without installing/running
   --out FILE                       Save configuration to a new JSON file
@@ -51,6 +56,9 @@ remain predictions until the configuration actually runs.`);
       scanApproved:!!values['allow-scan'],networkApproved:!!values['allow-network'],downloadApproved:!!values['allow-download'],installApproved:!!values['allow-install'],runApproved:!!values['allow-run'],
       answerOnly:!!values['answer-only'],out:values.out,prompt:values.prompt,once:!!values.once,
       tokens:values.tokens?positive(values.tokens,'Tokens',32768):undefined,seconds:values.seconds?positive(values.seconds,'Seconds',3600):undefined};
+    options.backend=values.backend??'auto';options.device=values.device??null;
+    if(values.threads)options.threads=positive(values.threads,'Threads',1024);
+    if(values.home)process.env.APERTURE_HOME=localPath(values.home);
     ui=terminalUI();let result;
     if(command==='list')await listSaved(ui);
     else if(command==='setup'){
@@ -61,7 +69,7 @@ remain predictions until the configuration actually runs.`);
       if(command==='chat'&&options.runApproved&&!options.prompt&&options.once)throw new Error('--once requires --prompt.');
       result=await resume(positionals[1],ui,{...options,chat:command==='chat',experiment:command==='experiment'});
     }
-    if(result?.status==='INCOMPLETE')process.exitCode=2;
+    if(result?.status==='INCOMPLETE'||result?.status==='NEEDS_A_CHANGE_OR_ADAPTER')process.exitCode=2;
   }
 }catch(e){console.error(`${e.code||'APERTURE'}: ${clean(e.message)}`);process.exitCode=e.code==='CANCELLED'?0:2;}
 finally{ui?.close();}
