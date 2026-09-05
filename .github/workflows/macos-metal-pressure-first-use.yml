@@ -80,11 +80,16 @@ jobs:
           $fit = Get-Content -Raw -LiteralPath $fitFile.FullName | ConvertFrom-Json
           $summary = Get-Content -Raw -LiteralPath $summaryFile.FullName | ConvertFrom-Json
           if ($fit.status -ne 'FITS_ESTIMATE' -or [int]$fit.selected.gpuLayers -le 0) { throw 'The candidate did not admit a Metal placement.' }
-          if ($summary.status -ne 'GENERATED_NOT_TASK_QUALIFIED') { throw "Unexpected native status: $($summary.status)" }
+          if ($summary.status -ne 'COMPLETED_NOT_TASK_QUALIFIED') { throw "Unexpected native status: $($summary.status)" }
           if ($summary.backend -ne 'metal') { throw "Unexpected native backend: $($summary.backend)" }
           if ([int]$summary.observedGpuLayers -le 0) { throw 'No model layers were observed on Metal.' }
           if ([int]$summary.requestedContext -ne 2048 -or [int]$summary.observedContext -lt 2048 -or [int]$summary.observedContext -gt 2303) { throw 'Context requirement was not preserved.' }
           if (($summary.text | Out-String).Trim() -ne '42') { throw "Arithmetic smoke assertion failed: $($summary.text)" }
+          if ($summary.memoryWatchdog.status -ne 'STOPPED') { throw "Unexpected watchdog status: $($summary.memoryWatchdog.status)" }
+          if (-not [bool]$summary.memoryWatchdog.requireMacPressure) { throw 'The serving watchdog did not preserve the macOS pressure source.' }
+          if ([int]$summary.memoryWatchdog.samples -lt 1) { throw 'The serving watchdog recorded no samples.' }
+          if ([int64]$summary.memoryWatchdog.minimumAvailableBytes -le [int64]$summary.memoryWatchdog.reserveBytes) { throw 'The serving passage crossed its admitted memory reserve.' }
+          if ($summary.memoryWatchdog.last.basis -notmatch 'memory_pressure') { throw "Serving watchdog basis mismatch: $($summary.memoryWatchdog.last.basis)" }
 
           $modelFile = Get-ChildItem (Join-Path $apertureHome 'models') -File -Recurse -ErrorAction Stop |
             Where-Object { $_.Length -eq [int64]$env:MODEL_BYTES } | Select-Object -First 1
@@ -114,6 +119,14 @@ jobs:
               admittedAvailableBytes = [int64]$support.memory.availableBytes
               allocationHeadroomBytes = [int64]$support.memory.allocationHeadroomBytes
               basis = $support.memory.basis
+              watchdog = [ordered]@{
+                reserveBytes = [int64]$summary.memoryWatchdog.reserveBytes
+                samples = [int]$summary.memoryWatchdog.samples
+                minimumAvailableBytes = [int64]$summary.memoryWatchdog.minimumAvailableBytes
+                peakProcessRssBytes = [int64]$summary.memoryWatchdog.peakProcessRssBytes
+                lastBasis = $summary.memoryWatchdog.last.basis
+                triggered = $false
+              }
             }
             request = [ordered]@{
               model = 'qwen2.5-0.5b-instruct-q4_k_m.gguf'
