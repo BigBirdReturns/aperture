@@ -1,4 +1,4 @@
-# Aperture 0.4.0 verification
+# Aperture 0.4.1 verification
 
 Observed September 4, 2026 Pacific / September 5 UTC. Native execution is separate from control tests and package installation. Full local records contain machine identifiers and paths and were not published.
 
@@ -29,4 +29,10 @@ Windows GPU workers initially stalled during runtime import when inheriting the 
 
 ## Repeatable checks
 
-`npm test` exercises 97 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+`npm test` exercises 108 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+
+## CUDA discovery correction, 0.4.1
+
+The earlier Windows `NoBinaryFoundError` was reproduced with closed worker stdin. The pinned binary imports CUDA 13 cuBLAS; its fallback imports CUDA 12 cuBLAS/cudart. The required libraries were absent from the worker search path but present in the existing Ollama installation. Supplying that directory only to a child process allowed the unchanged runtime to initialize and generate.
+
+The integrated discovery path was then exercised without a manual PATH change: Qwen2.5-0.5B Q4_K_M (the SHA-256 above), context 2048, RTX 3090, 25 observed GPU layers, actual output `42`, exit 0. A subsequent native CUDA chat returned `CEDAR83` on two turns at the same context and exited cleanly. These are bounded inference and continuity checks, not throughput or general quality benchmarks. Library discovery is exercised natively on this Windows host; other installed-prefix layouts have control coverage. This correction does not establish execution above nominal VRAM capacity.
