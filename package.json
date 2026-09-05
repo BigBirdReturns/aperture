@@ -1,6 +1,6 @@
 {
   "name": "@bigbirdreturns/aperture",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Permissioned hardware scan, chosen model link or path, and an explained execution method.",
   "type": "module",
   "bin": {
