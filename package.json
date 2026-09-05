@@ -1,0 +1,37 @@
+{
+  "name": "@bigbirdreturns/aperture",
+  "version": "0.3.0",
+  "description": "Permissioned hardware scan, chosen model link or path, and an explained execution method.",
+  "type": "module",
+  "bin": {
+    "aperture": "bin/aperture.mjs"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check bin/aperture.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "vendor/aperture-methods/aperture_methods",
+    "vendor/aperture-methods/requirements-base.txt",
+    "vendor/aperture-methods/requirements-hf.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BigBirdReturns/aperture.git"
+  },
+  "homepage": "https://github.com/BigBirdReturns/aperture",
+  "bugs": {
+    "url": "https://github.com/BigBirdReturns/aperture/issues"
+  }
+}

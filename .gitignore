@@ -1,0 +1,9 @@
+node_modules/
+*.tgz
+*.part
+*.gguf
+*.safetensors
+.aperture/
+__pycache__/
+*.pyc
+local-evidence/

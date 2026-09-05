@@ -1,0 +1,7 @@
+-r requirements-base.txt
+# A compatible PyTorch build must already be installed. No CUDA/driver installer is included.
+# Candidate installation ranges only, not a tested compatibility matrix or lockfile. Configure binds installed versions.
+transformers>=4.56,<6
+accelerate>=1.10,<2
+safetensors>=0.4.3,<1
+huggingface-hub>=0.34,<2
