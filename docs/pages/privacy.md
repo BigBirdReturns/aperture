@@ -13,6 +13,7 @@ A local model inspection reads the path you select. A remote inspection contacts
 | Operation | Effect |
 | --- | --- |
 | Hardware scan | Read local inventory and selected-path observations. |
+| Reduced support receipt | Run the approved hardware scan and write or print a reduced JSON view. No model access or upload occurs. |
 | Model metadata | Contact the chosen model host for metadata/header information. |
 | Weight acquisition | Download or reuse exact selected files in the managed cache. |
 | Native runtime installation | Install the pinned, prebuilt runtime under Aperture's own storage. |
@@ -34,9 +35,13 @@ The default root is `~/.aperture`, or your chosen `--home` / `APERTURE_HOME`.
 
 Original local model files stay in place. Aperture does not save the text of an interactive chat as a transcript. Saved configuration and generated-run files are different: they can contain local paths, hardware identifiers, prompts, and output. Terminal tools or other software may maintain their own history independently.
 
+A support receipt is written only to the `--out` path selected by the user, or printed to the terminal when no path is supplied. Existing files are not overwritten. Aperture never attaches or uploads the receipt automatically.
+
 ## Tokens and trust
 
 An existing `HF_TOKEN` is used only for requests to `huggingface.co` and is not forwarded to redirected download hosts or written to answers. Do not put secrets inside a model URL. Treat saved answer files as trusted local instructions, not harmless attachments to execute from strangers.
+
+The support command rejects model, network, download, runtime-installation, execution, and prompt flags. It does not read `HF_TOKEN`, a model path, a saved answer, or generated output for the receipt.
 
 ## Run an experiment deliberately
 
@@ -46,4 +51,14 @@ Recorded metrics include model-file hashes, runtime version, backend/device and 
 
 ## Share the smallest useful report
 
-Review any record before publishing it. Remove private prompts and outputs, tokens, usernames, personal paths, internal hostnames, and unnecessary hardware identifiers. There is no automatic public-result upload or redaction command in the released CLI. [Issue templates](https://github.com/BigBirdReturns/aperture/issues/new/choose) ask for minimal information so a report does not depend on exposing your working environment.
+Use the reduced receipt for an initial hardware report:
+
+```sh
+aperture support --allow-scan --out aperture-support.json
+```
+
+The `aperture-support/1` schema omits host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names and serials, network adapter names and addresses, model locations, prompts, generated text, credentials, and environment variables. Provider failures are reduced to bounded classes, and labels that look like PCI addresses, PnP identifiers, MAC addresses, or absolute paths are withheld.
+
+The receipt is **not anonymous**. It retains hardware model names, drivers, exact capacities, current headroom, scan timing, and a timestamp because those fields help reproduce fit and backend failures. That combination may identify a distinctive machine. Inspect the JSON before publishing it, remove any field that is unnecessary for the venue, and pair it only with the exact public model coordinates, Aperture version, requested context, sequence count, and the smallest redacted error needed to explain the result.
+
+Raw scan, answer, and run records remain private by default. Do not upload them merely because the reduced receipt exists. [Issue templates](https://github.com/BigBirdReturns/aperture/issues/new/choose) accept the reduced receipt or a manually written hardware summary.
