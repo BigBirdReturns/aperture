@@ -27,3 +27,7 @@ body{font-size:15px;line-height:1.8}
 @media print{body{background:#ECE7D8;color:#0D0C09}.scg-mark{display:none}h1,h2,h3,p,a,.prose strong{color:#0D0C09!important}}
 
 @media(max-width:760px){.toplinks{flex-wrap:wrap;gap:0 20px}.toplinks a{font-size:12px}.hero .install-controls label{min-width:0;width:100%;flex-basis:100%}.hero .install-controls select{max-width:100%}}
+
+/* System font metrics differ: retain readable headings at the narrowest width. */
+.article-header h1,.prose h2,.prose h3,.toc a,.next-prev a{overflow-wrap:anywhere}
+@media(max-width:360px){.article-header h1{font-size:30px}}
