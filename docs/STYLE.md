@@ -11,3 +11,5 @@ Display uses IBM Plex Sans with system sans-serif fallbacks. Text and metadata u
 Installation must remain visible, prerequisites must accompany the command, and the documentation must remain readable without JavaScript. Search and clipboard are optional conveniences. Retain keyboard focus, a skip link, mobile navigation, reduced-motion support, print styling, and clipboard-denied recovery.
 
 Use complete explanatory sentences and accurate versioned claims. Do not describe source inspection as inference or preliminary memory estimates as a successful load. The website does not scan the visitor's computer.
+
+The shared social-preview image is evergreen and carries no release number. Versions and package coordinates belong in the live HTML and release record, because previously shared images can remain cached across releases. Regenerate the image with `python tools/render_docs_asset.py` after editing its source, and preserve its 1200 by 630 canvas and canonical mark.
