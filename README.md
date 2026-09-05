@@ -13,10 +13,10 @@ Requires Node.js 20.11+ and Git. In Windows PowerShell, use `npx.cmd` if executi
 The same release is available as a GitHub release tarball for installations without Git:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.3.0/bigbirdreturns-aperture-0.3.0.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.0/bigbirdreturns-aperture-0.4.0.tgz aperture
 ```
 
-For a reproducible GitHub install, append `#v0.3.0` to the repository specifier. Registry publication is not required by either command. This project is not currently published at `npx @bigbirdreturns/aperture`.
+For a reproducible GitHub install, append `#v0.4.0` to the repository specifier. Registry publication is not required by either command. This project is not currently published at `npx @bigbirdreturns/aperture`.
 
 ## The interaction
 
@@ -38,7 +38,7 @@ That is an example selected by the user, not an automatic replacement for their 
 npx --yes github:BigBirdReturns/aperture setup --model /models/chosen.gguf --context 8192
 ```
 
-Local GGUF files, complete numbered shard sets, safetensors checkpoint folders, Hugging Face repositories/file links, `hf:owner/repository`, and direct HTTPS GGUF files are accepted for inspection. A numbered shard identifies its complete set. Hugging Face references are resolved to an immutable revision. Exact quantization and requested context are preserved. The program does not silently select a smaller model or shrink an explicit context.
+Local GGUF files (including extensionless engine blobs identified by their header), complete numbered shard sets, safetensors checkpoint folders, Hugging Face repositories/file links, `hf:owner/repository`, and direct HTTPS GGUF files are accepted for inspection. A numbered shard identifies its complete set. Hugging Face references are resolved to an immutable revision. Exact quantization and requested context are preserved. The program does not silently select a smaller model or shrink an explicit context.
 
 For a scriptable answer without downloading weights or starting inference:
 
@@ -52,7 +52,7 @@ Omit `--allow-network` for local-only inspection. A repository with multiple rep
 
 For supported GGUF models, the managed `node-llama-cpp@3.20.0` runtime selects GPU layers for the fixed context and executes remaining layers on the CPU. The complete checkpoint remains on local or mounted storage. Memory mapping does not make storage equivalent to RAM, and ordinary CPU-layer offload is distinct from streaming all model computation through a small GPU window.
 
-The scanner distinguishes discrete GPU memory from Apple Silicon unified memory and does not add independent GPUs into a fictional pooled device. This release selects one NVIDIA accelerator, Apple Metal, or CPU. `--cpu` forces CPU execution. `--gpu-layers N` pins a layer count for controlled GGUF placement. `--parallel N` preserves a concurrency requirement, but this release's guided runner supports one sequence and reports larger requests as unsupported instead of quietly reducing them.
+The scanner inventories CPU, integrated/discrete graphics, neural accelerator candidates, RAM modules where available, Windows commit headroom, physical disks, volumes, and available link observations. It distinguishes discrete GPU memory from Intel/Apple shared system memory and does not add independent GPUs into a fictional pooled device. This release selects one CUDA or Vulkan device, Apple Metal, or CPU. With the default automatic route, an unavailable CUDA binary can fall back to Vulkan on the selected hardware, or to CPU with a visible explanation. An explicit backend is never silently replaced. `--cpu` forces CPU execution. `--gpu-layers N` pins a layer count for controlled GGUF placement. `--parallel N` preserves a concurrency requirement, but this release's guided runner supports one sequence and reports larger requests as unsupported instead of quietly reducing them.
 
 The printed configuration is a candidate until loading verifies backend and context. Speed is not invented from the GPU name. Models larger than the provisional resident-memory budgets may be slow or fail to load, and the output says so. This release does not implement remote-range numerical streaming, distributed inference, or arbitrary quantized-safetensors kernels. Architecture support ultimately depends on the selected runtime.
 
@@ -60,7 +60,7 @@ The printed configuration is a candidate until loading verifies backend and cont
 
 The optional native runtime is installed under `~/.aperture/runtimes`, not globally. Installation uses a pinned package, disables install scripts, and permits prebuilt binaries only. Aperture does not install drivers or compile a GPU stack. Missing platform binaries produce an explicit error. Safetensors execution uses the bundled Transformers/Accelerate adapter and requires an existing compatible Python/PyTorch installation; inspecting a model does not require Python.
 
-Downloads are saved under `~/.aperture/models`. Interrupted downloads can resume against a pinned file and a validated byte range; a server that cannot resume may restart that file. Completed files are verified with SHA-256, including the provider hash when available. Repeated selections reuse this cache. Your original model files remain in place. Set `APERTURE_HOME` to relocate all managed files.
+Downloads are saved under `~/.aperture/models`. Interrupted downloads can resume against a pinned file and a validated byte range; a server that cannot resume may restart that file. Completed files are verified with SHA-256, including the provider hash when available. Repeated selections reuse this cache. Your original model files remain in place. Use `--home /path/to/storage` or set `APERTURE_HOME` to relocate all managed files. The scanner checks that destination filesystem, including the existing parent of a new directory, instead of assuming that the current directory is the download destination.
 
 Removing this CLI does not remove your weights. Delete only the managed model/runtime directories you intend to remove, or set a fresh `APERTURE_HOME` to isolate another installation. Do not delete unrelated Hugging Face or application caches as a troubleshooting step.
 
@@ -70,7 +70,7 @@ Removing this CLI does not remove your weights. Delete only the managed model/ru
 aperture experiment answer.json
 ```
 
-Experiments require separate approval and run two bounded generations with the same configuration. Records contain the actual artifact hashes, runtime version, observed GPU-layer count, context readback and wall-clock timing. Output agreement is not task correctness or numerical parity. Local records contain prompts, paths and generated text. They are not automatically uploaded or safe for indiscriminate public sharing. Interactive chat text is not saved by Aperture.
+Experiments require separate approval and run two bounded generations with the same configuration. Records contain the actual artifact hashes, runtime version, observed device and GPU-layer count, context readback, native token counters, and wall-clock timing. A zero GPU-layer result is CPU execution even when a GPU backend initialized. Token rates include prompt processing and are not decode-only benchmark scores. Output agreement is not task correctness or numerical parity. Local records contain prompts, paths and generated text. They are not automatically uploaded or safe for indiscriminate public sharing. Interactive chat text is not saved by Aperture.
 
 The hardware scan does not traverse personal folders, inspect browser state, or collect credentials. Metadata requests send the selected model identifier, not the hardware profile. Existing `HF_TOKEN` is sent only to `huggingface.co`; it is not copied into configurations or sent to redirected download hosts. Remote model Python code is not executed.
 
@@ -87,3 +87,25 @@ The control suite covers consent, fixed requirements, source inspection, shard s
 Aperture is an independent project. Magnitude inspired the compact scan/select/setup experience. The executable in this repository uses its own model-first controller and `node-llama-cpp`; it does not require modifying or waiting for Magnitude's native catalog-import path. The safetensors compatibility adapter comes from Aperture Methods. Neither the Magnitude integration experiments nor a general execution fabric are prerequisites for this command.
 
 Runtime and specification references: [node-llama-cpp](https://node-llama-cpp.withcat.ai/), [llama.cpp](https://github.com/ggml-org/llama.cpp), [Hugging Face Accelerate](https://huggingface.co/docs/accelerate/usage_guides/big_modeling), and [Magnitude](https://github.com/magnitudedev/magnitude). Their licenses and capabilities are separate from Aperture's MIT-licensed controller.
+
+## Device and storage controls in 0.4
+
+The ordinary command remains the guided wizard. A prompt supplied during setup selects one-answer mode, while scan, network, download, installation, and execution permissions remain independent.
+
+```sh
+aperture setup --backend vulkan --device Intel --model /models/chosen.gguf
+aperture setup --backend vulkan --device 0 --gpu-layers 4 --model /models/chosen.gguf
+aperture setup --cpu --threads 4 --home /fast-disk/aperture --model /models/chosen.gguf
+```
+
+Vulkan indexes are native-runtime indexes, not NVIDIA indexes. A name matching multiple devices is refused; the error lists initialized devices. Only one device is exposed to a worker. Native name/readback checks precede model loading. NVIDIA free-memory observations bound Vulkan's budget when both observations are available. Unknown or shared memory domains receive conservative, non-additive RAM/GPU budgets.
+
+`--backend npu` preserves an NPU request and explains the missing numerical adapter. It does not silently execute GGUF on the CPU. Intel AI Boost is detected on the tested Core Ultra laptop, but NPU inference is not implemented in this release. The software also does not promise support for every AMD GPU, Intel GPU, Apple model, or model architecture merely because the device is listed.
+
+Native execution has been observed on Windows CPU, Windows Intel UHD 770 through Vulkan, Windows RTX 4060 with partial offload, and Linux CPU. Full inventory was observed on two different Windows hosts and a Linux host. The Linux path was also installed and executed directly through public GitHub `npx` acquisition. macOS adapters are implemented, but a native Mac inference result is not claimed here.
+
+The selected legacy Ollama Qwen3.5 GGUF blob with three RoPE dimension sections was inspected successfully but rejected by the pinned runtime, which expected four. No file was rewritten and no substitute was silently used. A separately selected Qwen2.5-3B Q4_K_M checkpoint completed with four GPU layers on a 4060 while its checkpoint size exceeded the driver's reported free VRAM. This proves that particular CPU/GPU split, not an unrestricted model-compatibility or speed claim.
+
+Automatic fitting is conservative and may select zero GPU layers. Explicit layer placement is available for controlled tuning. Storage bus names and nominal link rates are observations, not measured throughput. Physical RAM, shared graphics allocations, pagefile capacity, separate GPUs, and drives are never presented as one fungible memory pool.
+
+See [VERIFICATION.md](VERIFICATION.md) for the exact native observations and retained limitations.
