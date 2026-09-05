@@ -29,7 +29,7 @@ Windows GPU workers initially stalled during runtime import when inheriting the 
 
 ## Repeatable checks
 
-`npm test` exercises 133 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+`npm test` exercises 154 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
 
 ## CUDA discovery correction, 0.4.1
 
@@ -85,3 +85,20 @@ The 0.4.4 candidate separates core Windows CPU, memory, graphics, NPU and extern
 A 68,790-byte candidate package with SHA-256 `268aef0268db0cd008678509d1eabed7dd72c432387254c21c8af66a30feb833` was installed through a new npm cache and empty Aperture home. It installed node-llama-cpp 3.20.0 with 123 packages, retained Qwen2.5-0.5B-Instruct Q4_K_M at 491,400,032 bytes and SHA-256 `74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db`, preserved 2,048 context and one sequence, and initialized CUDA on the selected idle RTX 3090. Native fit selected 25 GPU layers; loading read back CUDA, 25 GPU layers and 2,048 context. A subsequent arithmetic regression generated `42` and exited 0. No Aperture-owned process remained, and the unrelated workload on the other GPU remained in place.
 
 The first operator attempt referenced a stale local model path and exited 2 before runtime installation. After correcting that path, an initial generation completed but did not follow an arbitrary exact-phrase instruction; it remains generated but not task-qualified. The arithmetic regression is the narrow expected-output check. Neither result establishes broad task quality, a decode-only throughput figure, native Mac support, NPU execution, or successful execution above physical GPU capacity. The sanitized release-candidate receipt is retained with the candidate assets; private paths, prompts, GPU UUIDs and weights are excluded.
+
+## System-headroom watchdog and physical-capacity candidate
+
+A Qwen2.5-14B Q4_K_M execution exposed a serving-time policy defect after successful fit, integrity verification, model loading, and context allocation. The worker compared process RSS with the planned CPU allocation. Memory-mapped checkpoint pages therefore appeared to consume the allocation even when Windows still retained the plan's system reserve. The run reached generation and was aborted with the untyped message `RAM watchdog limit`.
+
+The candidate replaces that proxy with a serialized system-headroom monitor. It compares current OS-available physical memory with the plan's explicit reserve; Linux also retains any cgroup-v2 ceiling used at admission. Process RSS is recorded only as diagnostic evidence. Missing required cgroup evidence or actual reserve pressure produces a typed failure. The same guard applies to one-answer workers and persistent chat, while native memory checks, fixed context, and assessed layer readback remain unchanged.
+
+The exact failed 28-layer plan was replayed after the repair. Peak process RSS reached 9,246,138,368 bytes, above the former 7,834,813,235-byte cutoff, while minimum available system memory was 4,643,037,184 bytes against a 1,566,962,647-byte reserve. The RTX 4060 run retained 2,048-token context, 28 observed GPU layers, and returned `42`. A separate pressure control set an intentionally impossible reserve and failed on its first sample with typed `SYSTEM_MEMORY_PRESSURE`.
+The complete pinned three-shard checkpoint was then independently SHA-256 verified and run through the ordinary candidate CLI. Its 8,982,142,976-byte tensor payload exceeds the RTX 4060's 8,585,740,288 driver-reported physical bytes by 396,402,688 bytes. Native fit selected 30 of 49 layers for the 4060 and the remainder for CPU execution. The model loaded, preserved one sequence and 2,048-token context, and returned `42`; load was 5.2889 seconds and generation was 1.4034 seconds for three native output tokens.
+
+The run's internal monitor sampled 34 times. Minimum available system memory was 4,188,659,712 bytes against a 1,892,083,630-byte reserve, while peak process RSS was 9,228,959,744 bytes. An independent sampler observed at least 7,304,437,760 bytes of Windows commit headroom, up to 7,144 MiB in use on the 4060, and zero utilization on the separate RTX 3090. This establishes one real CPU/GPU execution above the selected GPU's physical capacity. It does not establish optimal placement, general model compatibility, task quality, or a controlled throughput advantage.
+
+All 154 source/control tests and the clean package-install check passed. A persistent CPU chat also retained the word `ORCHID` across two turns and exited 0 at context 2048. Compact public evidence is in `verification/windows-physical-capacity-20260905.json`.
+
+## Separate Linux public first-use passage
+
+The published 0.4.3 tarball also completed an empty-Aperture-home and empty-npm-cache passage on a separate physical Linux x64 host. Aperture installed its pinned native runtime, downloaded and provider-hash-verified a new copy of the 491,400,032-byte Qwen2.5-0.5B Q4_K_M checkpoint, repeated native fit, and generated `42` on CPU at 2,048-token context. The command exited 0. The host already had Node.js and npm; this is not an unrelated public tester or a clean operating-system image. The path-free receipt is `verification/linux-public-first-use-20260905.json`.

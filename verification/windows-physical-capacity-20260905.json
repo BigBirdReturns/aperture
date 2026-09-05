@@ -1,0 +1,90 @@
+{
+  "schema": "aperture-public-verification/windows-physical-capacity@1",
+  "observed_at": "2026-09-05T18:24:46.312Z",
+  "evidence_class": "native_execution_candidate",
+  "implementation": {
+    "package_version_field": "0.4.3",
+    "base_commit": "9149c9123f8071b24fbb67cc4090c7081bb2181b",
+    "branch": "fix/system-headroom-watchdog-20260905",
+    "released_asset": false
+  },
+  "model": {
+    "repository": "Qwen/Qwen2.5-14B-Instruct-GGUF",
+    "revision": "b466e1f8c07172155743e8e1307507d8a4f91fbd",
+    "representation": "Q4_K_M",
+    "checkpoint_bytes": 8988110496,
+    "tensor_payload_bytes": 8982142976,
+    "files": [
+      {"name": "qwen2.5-14b-instruct-q4_k_m-00001-of-00003.gguf", "bytes": 3991999872, "sha256": "a09ea5e7b1eafb1b30b241726c3cc3c905c96f14ad41e246ffa5f44e53904f68"},
+      {"name": "qwen2.5-14b-instruct-q4_k_m-00002-of-00003.gguf", "bytes": 3989373504, "sha256": "21b9457d079680d284e90ef69607c4b2d8ef64a09d4729cb7b5e1357bdba41ae"},
+      {"name": "qwen2.5-14b-instruct-q4_k_m-00003-of-00003.gguf", "bytes": 1006737120, "sha256": "c8d37006760a387a35216e070e6664d7da927f10be8eb870fef2e3d4833d9976"}
+    ]
+  },
+  "request": {"context_tokens": 2048, "sequences": 1, "backend": "cuda", "device": "NVIDIA GeForce RTX 4060", "threads": 4},
+  "device_capacity": {
+    "driver_reported_physical_bytes": 8585740288,
+    "tensor_payload_excess_bytes": 396402688,
+    "other_gpu_used_for_execution": false
+  },
+  "native_fit": {
+    "total_layers": 49,
+    "selected_gpu_layers": 30,
+    "estimated_ram_bytes": 3759474688,
+    "estimated_vram_bytes": 5970317312,
+    "ram_budget_bytes": 9460418150,
+    "vram_budget_bytes": 6002049024
+  },
+  "execution": {
+    "status": "GENERATED_NOT_TASK_QUALIFIED",
+    "output": "42",
+    "observed_context_tokens": 2048,
+    "observed_gpu_layers": 30,
+    "load_seconds": 5.2889491,
+    "generation_seconds": 1.4033843,
+    "input_tokens": 85,
+    "output_tokens": 3
+  },
+  "system_headroom_watchdog": {
+    "reserve_bytes": 1892083630,
+    "minimum_available_bytes": 4188659712,
+    "peak_process_rss_bytes": 9228959744,
+    "samples": 34,
+    "triggered": false,
+    "authority": "available system memory against the plan reserve; process RSS is diagnostic only"
+  },
+  "former_failure_replay": {
+    "selected_gpu_layers": 28,
+    "old_rss_cutoff_bytes": 7834813235,
+    "plan_reserve_bytes": 1566962647,
+    "peak_process_rss_bytes": 9246138368,
+    "minimum_available_system_bytes": 4643037184,
+    "status": "GENERATED_NOT_TASK_QUALIFIED",
+    "output": "42",
+    "observed_context_tokens": 2048,
+    "observed_gpu_layers": 28,
+    "interpretation": "The process crossed the former RSS proxy while the system remained above its reserved floor."
+  },
+  "pressure_control": {
+    "status": "FAILED_AS_REQUIRED",
+    "code": "SYSTEM_MEMORY_PRESSURE",
+    "samples_before_abort": 1,
+    "interpretation": "An intentionally impossible reserve verified typed fail-closed propagation before useful execution."
+  },
+  "external_sampler": {
+    "samples": 41,
+    "minimum_available_ram_bytes": 4188659712,
+    "minimum_commit_headroom_bytes": 7304437760,
+    "maximum_4060_used_mib": 7144,
+    "maximum_4060_utilization_percent": 34,
+    "maximum_other_gpu_used_mib": 134,
+    "maximum_other_gpu_utilization_percent": 0
+  },
+  "controls": {"source_tests_passed": 154, "source_tests_failed": 0, "clean_package_install": "PASS", "two_turn_cpu_chat": "PASS"},
+  "boundaries": [
+    "This is one model, runtime, host, and configuration.",
+    "The arithmetic smoke output is not model-quality qualification.",
+    "The timing is not a controlled throughput comparison.",
+    "The checkpoint was split between CPU and one selected GPU; VRAM was not pooled.",
+    "Native Mac inference, NPU numerical execution, and distributed inference remain unverified."
+  ]
+}

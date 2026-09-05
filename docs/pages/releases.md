@@ -37,9 +37,9 @@ The retained native record includes CPU, Intel Vulkan, NVIDIA Vulkan, Linux acqu
 
 ## In development: physical-capacity execution
 
-The next physical-capacity qualification retains the pinned 14B Q4_K_M checkpoint, RTX 4060, 2,048-token context and one sequence. The 0.4.2 pre-download refusal is established separately; successful inference above physical VRAM capacity remains unverified.
+The pinned 14B Q4_K_M checkpoint has now completed candidate execution on the RTX 4060 at 2,048-token context and one sequence. Its 8,982,142,976-byte tensor payload exceeded the device's reported physical memory; native fit placed 30 of 49 layers on the 4060 and the model returned `42`. The separate 0.4.2 refusal under constrained budgets remains valid evidence of pre-download admission.
 
-The small-checkpoint admission and large-checkpoint refusal are verified separately. A successful fixed 14B partial-GPU generation remains an open acceptance test.
+The run also exposed and repaired an RSS-based watchdog false positive. The candidate now protects the plan's system-memory reserve using current physical availability, and Linux retains cgroup-v2 headroom when it controlled admission. This code and evidence remain unreleased until a successor versioned package is issued.
 
 ## Updating and rolling back
 

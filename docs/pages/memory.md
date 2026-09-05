@@ -20,7 +20,7 @@ A result with **zero GPU layers is CPU execution**, even when the CUDA or Vulkan
 
 The scanner prints a provisional explanation. **In 0.4.4, the native GGUF assessment runs before the weight-download prompt.** It reads at most 8 MiB per selected shard and 64 MiB total, then evaluates fixed-context layer placements against reserved budgets. A non-fitting or unavailable result stops acquisition. After acquisition and complete integrity hashing, each generation, chat launch and experiment trial receives a fresh assessment before loading. Actual loading retains native safety checks and verifies the assessed placement.
 
-This means an early candidate answer is not a guarantee that a large download will lead to a successful launch. Existing services can consume RAM or VRAM between inspection and loading. Loading still needs a current resource check even after a future pre-download check is added.
+This means an early candidate answer is not a guarantee that a large download will lead to a successful launch. Existing services can consume RAM or VRAM between inspection and loading. Loading still needs a current resource check after the pre-download assessment. During execution, the development watchdog compares current system availability with the plan reserve; process RSS remains diagnostic because memory-mapped file pages are not equivalent to allocation pressure.
 
 ## Explicit controls
 
@@ -32,9 +32,9 @@ Automatic fit is conservative and can select zero GPU layers. A manually chosen 
 
 ## What has been demonstrated
 
-The published record includes Qwen2.5-3B Q4_K_M on an RTX 4060 with four GPU layers and 2,048-token context while the checkpoint exceeded reported **free** VRAM. The checkpoint was still smaller than the card's physical capacity.
+Release 0.4.3 includes Qwen2.5-3B Q4_K_M on an RTX 4060 with four GPU layers and 2,048-token context while the checkpoint exceeded reported **free** VRAM. The checkpoint was still smaller than the card's physical capacity.
 
-A successful model execution beyond that card's physical memory capacity remains unverified. A separate 14B assessment returned no admissible configuration under constrained budgets; that observation was not a generation test or an exhaustive proof that other placements cannot work. No throughput or model-quality conclusion follows from it.
+A development candidate now adds a distinct physical-capacity result. The pinned Qwen2.5-14B Q4_K_M tensor payload was 8,982,142,976 bytes, 396,402,688 bytes above the 4060's driver-reported physical memory. Native fit selected 30 of 49 layers on that device; the model loaded, preserved 2,048-token context and one sequence, and returned `42`. The separate 3090 remained unused. The result establishes this configuration, not optimal placement, broad compatibility, task quality, or a controlled throughput advantage.
 
 The [verification source](https://github.com/BigBirdReturns/aperture/blob/v0.4.4/VERIFICATION.md) separates native observations from control tests. This distinction should remain intact in screenshots, tutorials, and benchmark reports.
 
