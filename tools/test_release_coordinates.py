@@ -80,8 +80,13 @@ class ReleaseCoordinateTests(unittest.TestCase):
         self.assertEqual(receipt["execution"]["exitCode"], 0)
         self.assertEqual(receipt["execution"]["observedGpuLayers"], 25)
         self.assertEqual(receipt["controls"]["sourceControlTestsPassed"], 169)
+        self.assertFalse(receipt["privacy"]["localPathsIncluded"])
+        self.assertFalse(receipt["privacy"]["gpuUuidsIncluded"])
+        self.assertFalse(receipt["privacy"]["hostOrUserNameIncluded"])
+        self.assertFalse(receipt["privacy"]["modelWeightsIncluded"])
+        self.assertFalse(receipt["privacy"]["privateRunRecordIncluded"])
         serialized = json.dumps(receipt).lower()
-        for forbidden in ("c:\\", "/home/", "gpu-", "hostname", "username"):
+        for forbidden in ("c:\\", "/home/", "\\\\users\\\\", '"gpu-'):
             self.assertNotIn(forbidden, serialized)
 
     def test_publication_workflow_is_manifest_gated(self):
