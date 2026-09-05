@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Add a permissioned `aperture support` command that scans the same CPU, RAM, integrated and discrete graphics, NPU, storage, link, and runtime inventory used by planning, then emits a reduced JSON receipt for external support. The receipt excludes host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names, network adapter names, model locations, prompts, output, credentials, and environment variables. It retains hardware classes, drivers, capacities, current headroom, scan status, and explicit unmeasured fields. The file is not anonymous and must be reviewed before sharing.
+
 ## 0.4.4
 
 Windows hardware discovery now separates core CPU, memory, graphics, neural-device and external-link observations from extended storage and network inventory. Both groups run concurrently with independent bounds, so a slow extended provider no longer erases core facts. A public 0.4.3 package passage on a separate Windows host also records clean-cache installation, pre-download native fit, provider-hash verification, CUDA generation, two-turn context retention, and clean process release.
