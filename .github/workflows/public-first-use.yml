@@ -34,11 +34,11 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $root = Join-Path $env:RUNNER_TEMP 'aperture-public-first-use'
-          $home = Join-Path $root 'home'
+          $apertureHome = Join-Path $root 'home'
           $cache = Join-Path $root 'npm-cache'
           $public = Join-Path $root 'public'
-          New-Item -ItemType Directory -Path $root, $home, $cache, $public -Force | Out-Null
-          if ((Get-ChildItem -Force $home).Count -ne 0 -or (Get-ChildItem -Force $cache).Count -ne 0) { throw 'First-use roots were not empty.' }
+          New-Item -ItemType Directory -Path $root, $apertureHome, $cache, $public -Force | Out-Null
+          if ((Get-ChildItem -Force $apertureHome).Count -ne 0 -or (Get-ChildItem -Force $cache).Count -ne 0) { throw 'First-use roots were not empty.' }
 
           $package = Join-Path $root 'bigbirdreturns-aperture-0.4.5.tgz'
           Invoke-WebRequest -Uri $env:APERTURE_PACKAGE_URL -OutFile $package
@@ -53,7 +53,7 @@ jobs:
 
           $log = Join-Path $root 'execution.log'
           & $npx --yes --cache $cache "--package=$package" aperture setup `
-            --home $home `
+            --home $apertureHome `
             --model $env:APERTURE_MODEL_URL `
             --context 2048 `
             --parallel 1 `
@@ -70,7 +70,7 @@ jobs:
           $executionExit = $LASTEXITCODE
           if ($executionExit -ne 0) { throw "Public first-use execution exited $executionExit" }
 
-          $summaryFile = Get-ChildItem -LiteralPath (Join-Path $home 'runs') -Filter summary.json -Recurse | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          $summaryFile = Get-ChildItem -LiteralPath (Join-Path $apertureHome 'runs') -Filter summary.json -Recurse | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           if (-not $summaryFile) { throw 'No Aperture run summary was created.' }
           $summary = Get-Content -Raw -LiteralPath $summaryFile.FullName | ConvertFrom-Json
           if ($summary.schema -ne 'aperture-runs/1' -or $summary.completed -ne 1 -or $summary.trials[0].status -ne 'COMPLETED') { throw 'The public run did not complete.' }
@@ -84,7 +84,7 @@ jobs:
           if ($modelContent.Count -ne 1 -or $modelContent[0].bytes -ne [int64]$env:APERTURE_MODEL_BYTES -or $modelContent[0].sha256 -ne $env:APERTURE_MODEL_SHA256) { throw 'Downloaded model identity mismatch.' }
 
           $supportFile = Join-Path $public 'aperture-support.json'
-          & $npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $home --out $supportFile
+          & $npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $apertureHome --out $supportFile
           if ($LASTEXITCODE -ne 0) { throw 'The installed support command failed.' }
           $support = Get-Content -Raw -LiteralPath $supportFile | ConvertFrom-Json
           if ($support.schema -ne 'aperture-support/1' -or $support.apertureVersion -ne '0.4.5') { throw 'Support receipt identity mismatch.' }
