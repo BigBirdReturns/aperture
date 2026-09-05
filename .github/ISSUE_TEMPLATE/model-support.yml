@@ -1,0 +1,34 @@
+name: Model or backend support
+description: Request or report one exact model, representation, and execution combination.
+title: "[Support] "
+body:
+  - type: markdown
+    attributes:
+      value: "A model name alone is not enough to reproduce execution. Share public coordinates, not weights or credentials."
+  - type: input
+    id: artifact
+    attributes:
+      label: Public model, revision, and representation
+      description: Exact checkpoint or a redacted description if private.
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: OS, backend, GPU model, and memory capacity
+      description: Do not provide GPU UUIDs, serial numbers, or a full machine snapshot.
+    validations:
+      required: true
+  - type: input
+    id: request
+    attributes:
+      label: Aperture version, context, and sequence count
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Current result or missing support
+      description: Distinguish inspection, predicted fit, load, and actual generation. Attach only minimal redacted errors.
+    validations:
+      required: true
