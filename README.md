@@ -4,7 +4,7 @@
 
 Aperture inspects your hardware with permission, reads the model link or local files you choose, and explains a memory-aware configuration. For compatible GGUF models, it can start a local chat or bounded experiment using an existing inference runtime, including CPU/GPU split execution when the checkpoint exceeds available VRAM.
 
-**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.3](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.3)** · [MIT license](LICENSE)
+**[Website](https://bigbirdreturns.github.io/aperture/)** · **[Get started](https://bigbirdreturns.github.io/aperture/quickstart.html)** · **[Verified support](https://bigbirdreturns.github.io/aperture/support.html)** · **[Release 0.4.4](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.4)** · [MIT license](LICENSE)
 
 ## Start with one command
 
@@ -13,16 +13,16 @@ Install [Node.js LTS](https://nodejs.org/en/download) first. Requires Node.js 20
 **Windows PowerShell**
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz aperture
 ```
 
 **Linux / macOS terminal**
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz aperture
 ```
 
-Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.3` instead. Distribution is through GitHub, not the npm registry namespace.
+Windows and Linux have recorded native runs; native Mac inference remains unverified. With Git installed, use `npx --yes github:BigBirdReturns/aperture#v0.4.4` instead. Distribution is through GitHub, not the npm registry namespace.
 
 ## The workflow
 

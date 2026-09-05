@@ -1,6 +1,6 @@
 # Supported paths and verified results
 
-This page describes the **0.4.3 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
+This page describes the **0.4.4 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
 
 ## Platform and runtime coverage
 
@@ -39,12 +39,19 @@ A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failur
 
 ## Evidence and reproducibility
 
-The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.3/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
+The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.4/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
 
-The release contains **135 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks package installation. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, and browser-interaction checks.
+The release contains **141 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks package installation. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, and browser-interaction checks.
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
 
+
+
+## Windows scan resilience in 0.4.4
+
+Windows hardware discovery now runs core CPU, memory, graphics, NPU and external-link observations separately from extended storage and network inventory. The two bounded groups run concurrently. If the extended provider stalls, Aperture retains the completed core facts and marks the record partial; it reports the whole operating-system inventory unavailable only when both groups fail. One PnP enumeration supplies both NPU and external-link rows.
+
+The release candidate returned complete inventory on the separate Windows host in 7.946 seconds after those providers had already been exercised. That is an observed warm-provider result, not a clean-machine latency guarantee. The preexisting numerical and permission paths are unchanged.
 
 ## Additional public-package passage
 

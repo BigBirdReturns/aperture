@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.4
 
 Windows hardware discovery now separates core CPU, memory, graphics, neural-device and external-link observations from extended storage and network inventory. Both groups run concurrently with independent bounds, so a slow extended provider no longer erases core facts. A public 0.4.3 package passage on a separate Windows host also records clean-cache installation, pre-download native fit, provider-hash verification, CUDA generation, two-turn context retention, and clean process release.
 
