@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   metal:
-    runs-on: macos-26-arm64
+    runs-on: macos-26
     timeout-minutes: 30
     env:
       MODEL_URL: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf
