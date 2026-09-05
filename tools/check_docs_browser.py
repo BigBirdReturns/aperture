@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, functools, http.server, json, os, re, tempfile, threading
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
@@ -70,17 +70,17 @@ def main():
                     page.locator('[data-copy="install-code"]').click()
                     assert page.evaluate('navigator.clipboard.readText()') == expected
             page.fill('#search', 'CUDA')
-            page.wait_for_function("document.querySelector('#search-status').textContent.includes('found')")
+            expect(page.locator('#search-status')).to_contain_text('found')
             assert page.locator('#search-results a').count() > 0
             page.keyboard.press('Escape'); assert page.locator('#search-results').is_hidden()
             page.fill('#search', 'nonexistent-page-998822')
-            page.wait_for_function("document.querySelector('#search-status').textContent.includes('No matching')")
+            expect(page.locator('#search-status')).to_contain_text('No matching')
             page.reload(); page.keyboard.press('Tab')
             assert page.locator('.skip').evaluate('(e)=>document.activeElement===e')
             page.keyboard.press('Enter'); assert page.locator('#main').evaluate('(e)=>document.activeElement===e')
             page.evaluate("Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>Promise.reject(new Error('denied'))}})")
             page.locator('[data-copy="install-code"]').click()
-            page.wait_for_function("document.querySelector('.install-command .copy-status').textContent.includes('Clipboard unavailable')")
+            expect(page.locator('.install-command .copy-status')).to_contain_text('Clipboard unavailable')
             page.emulate_media(reduced_motion='reduce', color_scheme='light')
             assert page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches")
             assert page.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(13, 12, 9)'
@@ -95,7 +95,7 @@ def main():
             blocked = browser.new_context(); p = blocked.new_page()
             p.route('**/search-index.json', lambda route: route.abort())
             p.goto(base + '/index.html'); p.fill('#search', 'context')
-            p.wait_for_function("document.querySelector('#search-status').textContent.includes('unavailable')")
+            expect(p.locator('#search-status')).to_contain_text('unavailable')
             if args.base_url:
                 response = page.goto(base + '/missing-documentation-check/unknown', wait_until='networkidle')
                 assert response.status == 404
