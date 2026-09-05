@@ -1,0 +1,113 @@
+name: Public Aperture 0.4.5 first-use execution
+on:
+  push:
+    branches: ['qualification/public-first-use-v0.4.5-20260905']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: public-first-use-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  first-use:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      APERTURE_PACKAGE_URL: https://github.com/BigBirdReturns/aperture/releases/download/v0.4.5/bigbirdreturns-aperture-0.4.5.tgz
+      APERTURE_PACKAGE_SHA256: 1b539bbfb6eeb315a9cbc341baf0d2978546106da3efce9ef1afd1ca43bae13e
+      APERTURE_PACKAGE_BYTES: '72691'
+      APERTURE_MODEL_URL: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf
+      APERTURE_MODEL_SHA256: 74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db
+      APERTURE_MODEL_BYTES: '491400032'
+      MATRIX_OS: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download, verify, install, acquire and execute the public release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'aperture-public-first-use'
+          $home = Join-Path $root 'home'
+          $cache = Join-Path $root 'npm-cache'
+          $public = Join-Path $root 'public'
+          New-Item -ItemType Directory -Path $root, $home, $cache, $public -Force | Out-Null
+          if ((Get-ChildItem -Force $home).Count -ne 0 -or (Get-ChildItem -Force $cache).Count -ne 0) { throw 'First-use roots were not empty.' }
+
+          $package = Join-Path $root 'bigbirdreturns-aperture-0.4.5.tgz'
+          Invoke-WebRequest -Uri $env:APERTURE_PACKAGE_URL -OutFile $package
+          $packageItem = Get-Item -LiteralPath $package
+          $packageHash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($packageItem.Length -ne [int64]$env:APERTURE_PACKAGE_BYTES) { throw "Public package size mismatch: $($packageItem.Length)" }
+          if ($packageHash -ne $env:APERTURE_PACKAGE_SHA256) { throw "Public package digest mismatch: $packageHash" }
+
+          $npx = if ($IsWindows) { 'npx.cmd' } else { 'npx' }
+          $version = (& $npx --yes --cache $cache "--package=$package" aperture --version 2>&1 | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $version -ne '0.4.5') { throw "Installed executable mismatch: $version" }
+
+          $log = Join-Path $root 'execution.log'
+          & $npx --yes --cache $cache "--package=$package" aperture setup `
+            --home $home `
+            --model $env:APERTURE_MODEL_URL `
+            --context 2048 `
+            --parallel 1 `
+            --cpu `
+            --threads 4 `
+            --allow-scan `
+            --allow-network `
+            --allow-download `
+            --allow-install `
+            --allow-run `
+            --prompt 'What is 6 multiplied by 7? Reply with the two digits only.' `
+            --tokens 8 `
+            --seconds 600 2>&1 | Tee-Object -FilePath $log
+          $executionExit = $LASTEXITCODE
+          if ($executionExit -ne 0) { throw "Public first-use execution exited $executionExit" }
+
+          $summaryFile = Get-ChildItem -LiteralPath (Join-Path $home 'runs') -Filter summary.json -Recurse | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if (-not $summaryFile) { throw 'No Aperture run summary was created.' }
+          $summary = Get-Content -Raw -LiteralPath $summaryFile.FullName | ConvertFrom-Json
+          if ($summary.schema -ne 'aperture-runs/1' -or $summary.completed -ne 1 -or $summary.trials[0].status -ne 'COMPLETED') { throw 'The public run did not complete.' }
+          $result = $summary.trials[0].result
+          if ($result.status -ne 'GENERATED_NOT_TASK_QUALIFIED') { throw "Unexpected native status: $($result.status)" }
+          if ($result.requestedContext -ne 2048 -or $result.observedContext -lt 2048 -or $result.observedContext -gt 2303) { throw 'Context requirement changed.' }
+          if ($result.observedGpuLayers -ne 0) { throw 'The explicit CPU passage used GPU layers.' }
+          if ($result.runtime -ne 'node-llama-cpp@3.20.0') { throw "Runtime identity changed: $($result.runtime)" }
+          if ($result.text.Trim() -ne '42') { throw "Arithmetic smoke assertion failed: $($result.text)" }
+          $modelContent = @($result.modelContent)
+          if ($modelContent.Count -ne 1 -or $modelContent[0].bytes -ne [int64]$env:APERTURE_MODEL_BYTES -or $modelContent[0].sha256 -ne $env:APERTURE_MODEL_SHA256) { throw 'Downloaded model identity mismatch.' }
+
+          $supportFile = Join-Path $public 'aperture-support.json'
+          & $npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $home --out $supportFile
+          if ($LASTEXITCODE -ne 0) { throw 'The installed support command failed.' }
+          $support = Get-Content -Raw -LiteralPath $supportFile | ConvertFrom-Json
+          if ($support.schema -ne 'aperture-support/1' -or $support.apertureVersion -ne '0.4.5') { throw 'Support receipt identity mismatch.' }
+
+          $receipt = [ordered]@{
+            schema = 'aperture-public-verification/hosted-first-use@1'
+            observedAt = (Get-Date).ToUniversalTime().ToString('o')
+            evidenceClass = 'public_package_fresh_runtime_model_native_execution'
+            runner = [ordered]@{ label = $env:MATRIX_OS; platform = $support.runtime.platform; architecture = $support.runtime.architecture; nodeVersion = $support.runtime.nodeVersion; githubHosted = $true }
+            release = [ordered]@{ version = '0.4.5'; tag = 'v0.4.5'; mergeCommit = '9d40dd089f93676cad361b1679e3112b7ec4674c'; packageBytes = $packageItem.Length; packageSHA256 = $packageHash }
+            freshBoundaries = [ordered]@{ npmCache = 'empty before package installation'; apertureHome = 'empty'; managedRuntime = 'new node-llama-cpp 3.20.0 installation'; modelCache = 'new pinned model download' }
+            model = [ordered]@{ repository = 'Qwen/Qwen2.5-0.5B-Instruct-GGUF'; revision = '9217f5db79a29953eb74d5343926648285ec7e67'; file = $modelContent[0].name; bytes = $modelContent[0].bytes; sha256 = $modelContent[0].sha256 }
+            request = [ordered]@{ contextTokens = 2048; sequences = 1; backend = 'cpu'; threads = 4 }
+            execution = [ordered]@{ status = $result.status; answerAssertion = '42'; answerMatched = $true; requestedContextTokens = $result.requestedContext; observedContextTokens = $result.observedContext; observedGpuLayers = $result.observedGpuLayers; runtime = $result.runtime; loadSeconds = $result.loadSeconds; generationSeconds = $result.generationSeconds; inputTokens = $result.inputTokenCount; outputTokens = $result.outputTokenCount; processExit = $executionExit }
+            integrity = [ordered]@{ publicPackageDownloadedAndSHA256Verified = $true; providerModelSHA256Verified = $true; runSummarySHA256 = (Get-FileHash -LiteralPath $summaryFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant(); executionLogSHA256 = (Get-FileHash -LiteralPath $log -Algorithm SHA256).Hash.ToLowerInvariant() }
+            supportReceipt = $support
+            boundaries = @('This is an ephemeral GitHub-hosted runner, not an unrelated person or a clean operating-system installation.', 'Node.js and network access were supplied by the hosted image; Aperture installed its managed runtime and downloaded a new model copy.', 'Zero GPU layers is CPU execution.', 'The arithmetic assertion is not broad task-quality or performance qualification.', 'The reduced support receipt remains fingerprintable and was produced only for this controlled hosted runner.')
+          }
+          $receipt | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $public 'first-use.json') -Encoding utf8
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aperture-0.4.5-first-use-${{ matrix.os }}
+          path: ${{ runner.temp }}/aperture-public-first-use/public
+          if-no-files-found: warn
+          retention-days: 30
