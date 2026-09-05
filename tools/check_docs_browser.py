@@ -59,6 +59,9 @@ def main():
                 ratios[str(width)] = {'body': contrast(c['bg'], c['text']), 'nav': contrast(c['bg'], c['nav'])}
                 assert min(ratios[str(width)].values()) >= 4.5
                 assert c['bg'] == 'rgb(13, 12, 9)', c
+                page.locator('.hero-links .button').click()
+                expect(page.locator('#install-title')).to_be_in_viewport()
+                assert page.url.endswith('#install')
             page.set_viewport_size({'width':1440, 'height':1000})
             page.goto(base + '/index.html', wait_until='networkidle')
             for platform, exe in [('windows', 'npx.cmd'), ('posix', 'npx')]:
@@ -103,7 +106,7 @@ def main():
                 assert page.locator('a').first.get_attribute('href') == base + '/'
             assert not errors, errors
             browser.close()
-        report = {'base_url': base if args.base_url else 'local HTTP server', 'layout_cases':len(cases), 'guide_count':guide_count, 'theme':'SCG practice', 'widths':[1440,1024,768,390,320], 'body_nav_contrast':ratios, 'real_clipboard_combinations':4, 'negative_clipboard_test':'permission failure simulated', 'search_checked':True, 'no_javascript_checked':True, 'keyboard_checked':True, 'page_errors':errors, 'native_inference_performed':False}
+        report = {'base_url': base if args.base_url else 'local HTTP server', 'layout_cases':len(cases), 'guide_count':guide_count, 'theme':'SCG practice', 'widths':[1440,1024,768,390,320], 'body_nav_contrast':ratios, 'install_anchor_widths':[1440,1024,768,390,320], 'real_clipboard_combinations':4, 'negative_clipboard_test':'permission failure simulated', 'search_checked':True, 'no_javascript_checked':True, 'keyboard_checked':True, 'page_errors':errors, 'native_inference_performed':False}
         (out / 'browser-checks.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(report, indent=2))
         print('Evidence directory:', out)

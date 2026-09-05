@@ -73,19 +73,19 @@ def build(output: Path):
     for i,page in enumerate(pages):
         content,toc,text = render_markdown((ROOT / f"docs/pages/{page['slug']}.md").read_text(encoding="utf-8"))
         values = dict(page, site=site,pages=pages,home=False,content=content,toc=toc,previous=pages[i-1] if i else None,next=pages[i+1] if i+1<len(pages) else None)
-        (output / f"{page['slug']}.html").write_text(template.render(**values),encoding="utf-8")
+        (output / f"{page['slug']}.html").write_text(template.render(**values),encoding='utf-8',newline='\n')
         index.append(dict(page,url=f"{page['slug']}.html",text=text))
-    (output / 'index.html').write_text(template.render(site=site,pages=pages,home=True,slug='index',title='Aperture · Local model setup',description='Choose a model, inspect your hardware, and review a memory-aware local execution configuration.'),encoding='utf-8')
+    (output / 'index.html').write_text(template.render(site=site,pages=pages,home=True,slug='index',title='Aperture · Local model setup',description='Choose a model, inspect your hardware, and review a memory-aware local execution configuration.'),encoding='utf-8',newline='\n')
     shutil.copytree(ROOT / 'docs/assets',output / 'assets',dirs_exist_ok=True)
-    (output / 'search-index.json').write_text(json.dumps(index,ensure_ascii=False),encoding='utf-8')
-    (output / 'release.json').write_text(json.dumps(site,indent=2)+'\n',encoding='utf-8')
-    (output / '.nojekyll').write_text('',encoding='utf-8')
-    (output / 'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+site['base_url']+'/sitemap.xml\n',encoding='utf-8')
+    (output / 'search-index.json').write_text(json.dumps(index,ensure_ascii=False),encoding='utf-8',newline='\n')
+    (output / 'release.json').write_text(json.dumps(site,indent=2)+'\n',encoding='utf-8',newline='\n')
+    (output / '.nojekyll').write_text('',encoding='utf-8',newline='\n')
+    (output / 'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+site['base_url']+'/sitemap.xml\n',encoding='utf-8',newline='\n')
     urls = [site['base_url']+'/']+[site['base_url']+'/'+p['slug']+'.html' for p in pages]
     sitemap = '<?xml version="1.0" encoding="utf-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc><lastmod>'+site['reviewed']+'</lastmod></url>' for u in urls)+'</urlset>\n'
-    (output / 'sitemap.xml').write_text(sitemap,encoding='utf-8')
+    (output / 'sitemap.xml').write_text(sitemap,encoding='utf-8',newline='\n')
     # Absolute project URLs keep the error page usable at nested invalid paths.
-    (output / '404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Page not found · Aperture</title><link rel="stylesheet" href="'+site['base_url']+'/assets/site.css"><link rel="stylesheet" href="'+site['base_url']+'/assets/scg.css"><body><main class="shell section"><p class="eyebrow">Aperture documentation</p><h1>That page could not be found.</h1><p>Return to <a href="'+site['base_url']+'/">Aperture</a> or open <a href="'+site['base_url']+'/quickstart.html">Get started</a>.</p></main></body></html>',encoding='utf-8')
+    (output / '404.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Page not found · Aperture</title><link rel="stylesheet" href="'+site['base_url']+'/assets/site.css"><link rel="stylesheet" href="'+site['base_url']+'/assets/scg.css"><body><main class="shell section"><p class="eyebrow">Aperture documentation</p><h1>That page could not be found.</h1><p>Return to <a href="'+site['base_url']+'/">Aperture</a> or open <a href="'+site['base_url']+'/quickstart.html">Get started</a>.</p></main></body></html>',encoding='utf-8',newline='\n')
     print(json.dumps({'output':str(output),'pages':len(pages)+1,'release':site['version']}))
 
 if __name__=='__main__':

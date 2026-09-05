@@ -28,6 +28,7 @@ def main():
         if not ok:fail.append(message)
     for path in site.glob('*.html'):
         p=Page();p.feed(path.read_text(encoding='utf-8'));pages[path.resolve()]=p
+        require(b'\r\n' not in path.read_bytes(),f'{path.name}: generated text must use LF line endings')
         require(p.h1==1,f'{path.name}: requires exactly one h1')
         require(p.language=='en',f'{path.name}: missing document language')
         require(len(p.ids)==len(set(p.ids)),f'{path.name}: duplicate IDs')
