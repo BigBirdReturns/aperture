@@ -28,11 +28,13 @@ This release brought hardware discovery into model selection and execution, incl
 
 The retained native record includes CPU, Intel Vulkan, NVIDIA Vulkan, Linux acquisition and execution, and a partial-offload trial above the 4060's **available** VRAM. [Versioned release record](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.0).
 
-## In development · Native fit before acquisition
+## In development: Windows scan resilience and physical-capacity execution
 
 The next physical-capacity qualification retains the pinned 14B Q4_K_M checkpoint, RTX 4060, 2,048-token context and one sequence. The 0.4.2 pre-download refusal is established separately; successful inference above physical VRAM capacity remains unverified.
 
 The small-checkpoint admission and large-checkpoint refusal are verified separately. A successful fixed 14B partial-GPU generation remains an open acceptance test.
+
+The published 0.4.3 package has now completed a clean-cache CUDA generation and two-turn chat passage on a separate Windows host while preserving an unrelated workload on the host's other GPU. The run also exposed a monolithic Windows inventory timeout. A candidate repair separates core hardware facts from extended storage and network observations and preserves whichever bounded group completes. This scan repair remains unreleased until it appears in a later versioned package.
 
 ## Updating and rolling back
 

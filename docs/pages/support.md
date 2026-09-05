@@ -45,6 +45,13 @@ The release contains **135 source/control tests**. Its Node 22/24 by Ubuntu/Wind
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
 
+
+## Additional public-package passage
+
+The published 0.4.3 package was also exercised from a new npm cache and an empty Aperture home on a separate Core Ultra 5 Windows x64 host. The fixed 0.5B Q4_K_M artifact completed pre-download native fit, provider-hash verification, CUDA generation with 25 observed GPU layers at 2,048 context, a two-turn context-retention check, and a clean exit. The selected GPU was idle before the run, while an unrelated workload on the host's other GPU remained in place. The [public receipt](https://github.com/BigBirdReturns/aperture/blob/main/verification/windows-public-first-use-20260905.json) excludes local paths, prompts, GPU UUIDs, and model weights.
+
+The first detailed Windows operating-system inventory timed out even though NVIDIA discovery and the numerical path remained available. A subsequent full refresh succeeded. An unreleased candidate now isolates core hardware discovery from extended storage and network providers so a slow extended query cannot erase CPU, memory, graphics, NPU, and external-link observations. That candidate is not part of the 0.4.3 package described by this page.
+
 ## Admission and regression checks in 0.4.3
 
 The ordinary Windows runner returned `42` with the fixed 0.5B Q4_K_M checkpoint on CPU and RTX 4060 CUDA, preserving 2,048 context and reading back zero and 25 GPU layers respectively. A CPU chat retained a public badge code across two turns and exited cleanly. Integrity hashing preceded final native assessment. The pinned 14B target checked 50 placements and refused before acquisition under the observed constrained budgets. This remains a refusal, not beyond-physical-memory inference. See the version-pinned verification record for exact boundaries.

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import {isNeuralDevice,normalizeWindows,graphicsDomain,flattenBlockDevices,matchingVolume,storageAt} from '../lib/hardware.mjs';
+import {isNeuralDevice,normalizeWindows,graphicsDomain,flattenBlockDevices,matchingVolume,storageAt,windowsInventory} from '../lib/hardware.mjs';
 import {deviceBudget,chooseVulkan,nativeEnvironment,verifyNativeDevice} from '../lib/backends.mjs';
 import {makePlan} from '../lib/routes.mjs';
 import {nativeOptions} from '../lib/native-session.mjs';
@@ -56,4 +56,42 @@ test('An explicitly selected GGUF engine blob does not require renaming',async()
     const file=path.join(dir,'sha256-synthetic');await fs.writeFile(file,header);
     const result=await inspectLocal({kind:'local',path:file});assert.equal(result.kind,'gguf');assert.equal(result.source.path,file);
   }finally{await fs.rm(dir,{recursive:true,force:true});}
+});
+
+
+test('Windows core inventory survives an extended first-run timeout',async()=>{
+  const result=await windowsInventory({run:async(_exe,args)=>{
+    const script=args.at(-1);
+    if(script.includes('$r.disks'))throw Error('simulated timeout');
+    return {cpu:{Name:'Core CPU',NumberOfCores:4,NumberOfLogicalProcessors:8},memory:{AvailableBytes:123,CommitLimit:500,CommittedBytes:200},display:{Name:'Core GPU'},errors:[]};
+  }});
+  assert.equal(result.status,'PARTIAL');
+  assert.equal(result.cpu[0].name,'Core CPU');
+  assert.equal(result.memory.availableBytes,123);
+  assert.equal(result.graphics[0].name,'Core GPU');
+  assert.match(result.errors.join(' '),/Extended Windows inventory unavailable/);
+});
+test('Windows core and extended observations merge without duplicate PnP scans',async()=>{
+  const calls=[];
+  const result=await windowsInventory({run:async(_exe,args,timeout)=>{
+    const script=args.at(-1);calls.push({script,timeout});
+    if(script.includes('$r.disks'))return {disks:{Number:1,FriendlyName:'Disk',Size:100},volumes:{DriveLetter:'D',Size:100,SizeRemaining:40},partitions:{DriveLetter:'D',DiskNumber:1},errors:[]};
+    return {npu:{Name:'Intel AI Boost',PNPClass:'ComputeAccelerator'},links:{Name:'USB4 Router'},errors:[]};
+  }});
+  assert.equal(calls.length,2);
+  assert.deepEqual(calls.map(c=>c.timeout).sort((a,b)=>a-b),[15000,20000]);
+  assert.equal(result.status,'OBSERVED');
+  assert.equal(result.disks[0].name,'Disk');
+  assert.equal(result.volumes[0].diskId,'1');
+  assert.equal(result.neural.length,1);
+  assert.equal(result.links.length,1);
+  assert.equal((calls[0].script.match(/Win32_PnPEntity/g)||[]).length,1);
+  assert.equal((calls[1].script.match(/Win32_PnPEntity/g)||[]).length,0);
+});
+test('Windows inventory is unavailable only when both bounded groups fail',async()=>{
+  const result=await windowsInventory({run:async()=>{throw Error('simulated total failure');}});
+  assert.equal(result.status,'UNAVAILABLE');
+  assert.equal(result.cpu.length,0);
+  assert.equal(result.disks.length,0);
+  assert.equal(result.errors.length,2);
 });
