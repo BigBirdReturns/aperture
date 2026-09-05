@@ -4,7 +4,7 @@ title: "[Support] "
 body:
   - type: markdown
     attributes:
-      value: "A model name alone is not enough to reproduce execution. Share public coordinates, not weights or credentials."
+      value: "A model name alone is not enough to reproduce execution. Share public coordinates, not weights or credentials. Builds with the support command can create a reduced hardware receipt with `aperture support --allow-scan --out aperture-support.json`. Inspect that JSON before attaching it; hardware names, drivers, capacities, and timestamps can still fingerprint a machine."
   - type: input
     id: artifact
     attributes:
@@ -12,11 +12,11 @@ body:
       description: Exact checkpoint or a redacted description if private.
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: hardware
     attributes:
-      label: OS, backend, GPU model, and memory capacity
-      description: Do not provide GPU UUIDs, serial numbers, or a full machine snapshot.
+      label: Reduced hardware receipt or OS/backend summary
+      description: Attach the reviewed Aperture support receipt when available, or describe OS, backend, GPU model, and memory capacity. Do not provide raw scans, GPU UUIDs, serial numbers, local paths, prompts, or credentials.
     validations:
       required: true
   - type: input
