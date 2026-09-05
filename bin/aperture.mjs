@@ -41,7 +41,7 @@ try{
 Explicit automation permissions, each independent:
   --allow-scan                      Read hardware observations
   --allow-network                   Read bounded model metadata
-  --allow-download                  Download/reuse the selected weights
+  --allow-download                  Download or resume missing selected weights
   --allow-install                   Install the isolated pinned native runtime
   --allow-run                       Execute the selected local model
 
