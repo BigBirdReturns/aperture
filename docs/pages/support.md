@@ -1,25 +1,33 @@
 # Supported paths and verified results
 
-This page describes the **0.4.5 release** and its retained observations. It separates implemented adapters, actual native execution, support-intake controls, and unverified combinations. The complete checkpoint and context remain part of each numerical result; an installed CLI or passing control suite does not qualify every device or architecture.
+This page describes the **0.4.6 release** and its retained observations. It separates implemented adapters, actual native execution, support-intake controls, managed-cache behavior, and unverified combinations. The complete checkpoint and context remain part of each numerical result; an installed CLI or passing control suite does not qualify every device or architecture.
 
 ## Platform and runtime coverage
 
 | Path | Implementation | Native evidence recorded |
 | --- | --- | --- |
 | Windows x64 CPU | Managed GGUF runtime | Qwen2.5-0.5B Q4_K_M, 2,048 context, output produced. |
-| Windows NVIDIA CUDA | Managed GGUF runtime plus installed-library discovery | In 0.4.1: RTX 3090, Qwen2.5-0.5B Q4_K_M, 25 GPU layers, 2,048 context; generation and two-turn chat with clean exit. In 0.4.4: Qwen2.5-14B Q4_K_M completed a CPU/RTX 4060 split while its tensor payload exceeded the device's reported physical memory. |
+| Windows NVIDIA CUDA | Managed GGUF runtime plus installed-library discovery | In 0.4.1: RTX 3090, Qwen2.5-0.5B Q4_K_M, 25 GPU layers, 2,048 context; generation and two-turn chat with clean exit. In 0.4.4: Qwen2.5-14B Q4_K_M completed a CPU/RTX 4060 split while its tensor payload exceeded the device's reported physical memory. In 0.4.6: a complete managed 0.5B GGUF resumed without model-host or weight-transfer approval, then rehashed, reassessed, and generated on CUDA with 25 observed GPU layers. |
 | Windows NVIDIA Vulkan | Managed GGUF runtime | RTX 4060 partial CPU/GPU execution; RTX 3090 automatic fallback observed on a preceding release path. |
 | Windows Intel UHD 770 Vulkan | Managed GGUF runtime | 25 GPU layers, 2,048 context; nonempty truncated output, not task-quality qualification. |
 | Linux CPU | Managed GGUF runtime | Model-link acquisition, runtime installation, generation, and public GitHub package acquisition exercised. |
 | macOS / Apple Metal | Adapter implemented | Native Mac inference not verified by this project. |
 | Other Intel / AMD / NVIDIA combinations | Dependent on compatible prebuilt runtime and drivers | No blanket hardware-family qualification. |
-| Safetensors via Transformers/Accelerate | Compatibility adapter; existing Python/PyTorch required | No general native safetensors qualification claimed here. |
+| Safetensors via Transformers/Accelerate | Compatibility adapter; existing Python/PyTorch required | No general native safetensors qualification claimed here. Managed-cache shortcut is not applied. |
 | NPU | Inventory and explicit unsupported request | Numerical execution not implemented. |
 | Multiple GPUs or hosts | No full placement/distributed implementation | No pooled-memory claim. |
 
 The guided runner admits one sequence. Automatic connections to Codex, Claude Code, OpenCode, or other external harnesses are not implemented in this application. Magnitude's feature list does not transfer to Aperture.
 
-## Reduced support receipts in 0.4.5
+## Exact managed-GGUF return use in 0.4.6
+
+When a saved remote GGUF is already complete under the exact Aperture-managed acquisition key, the runner can bind it locally before model-host metadata or weight-transfer approval. The key preserves source, pinned revision, representation, component names, declared sizes, and expected hashes. The admitted entries must be regular files, and complete component hashing plus refreshed native fit still precede loading.
+
+A separate Windows x64 passage used Qwen2.5-0.5B-Instruct Q4_K_M at revision `9217f5db79a29953eb74d5343926648285ec7e67`, 491,400,032 bytes, SHA-256 `74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db`, 2,048-token context, and one sequence. The executable candidate resumed the original saved remote selection without network or download approval, repeated full integrity and native-fit preparation, generated `FINAL CACHE PASS` through CUDA with 25 observed GPU layers, exited 0, and left no candidate-owned worker. The path-free [cache-reuse receipt](https://github.com/BigBirdReturns/aperture/blob/v0.4.6/verification/windows-cache-reuse-20260905.json) records the bounded result.
+
+This passage does not authorize a global cache search, import another application's files, trust a sidecar instead of hashing, or bypass runtime-installation and execution approval. Missing, changed, symbolic, differently identified, or incomplete entries return to the ordinary permissioned path. Safetensors are excluded from this shortcut.
+
+## Reduced support receipts retained from 0.4.5
 
 `aperture support --allow-scan --out aperture-support.json` runs the ordinary hardware inventory and emits a separate reduced schema. It retains the CPU, memory, integrated and discrete graphics, NPU, storage-class, link, driver, runtime-presence, provider-status, and explicit unmeasured fields needed to investigate a fit or backend failure.
 
@@ -41,15 +49,15 @@ The integrated path produced `42` and retained `CEDAR83` across two chat turns o
 
 ## Current limitations that affect a first run
 
-Native GGUF fit assessment precedes the complete weight-download prompt. The lightweight `--answer-only` result remains provisional. Release 0.4.4 records one checkpoint larger than the selected accelerator's physical memory completing through a CPU/GPU split, and 0.4.5 retains that numerical path unchanged. That result does not generalize to arbitrary architectures or checkpoints. Automatic fitting may select zero GPU layers; that remains CPU execution.
+Native GGUF fit assessment precedes the complete weight-download prompt. The lightweight `--answer-only` result remains provisional. Release 0.4.4 records one checkpoint larger than the selected accelerator's physical memory completing through a CPU/GPU split, and 0.4.6 retains that numerical path unchanged. That result does not generalize to arbitrary architectures or checkpoints. Automatic fitting may select zero GPU layers; that remains CPU execution.
 
 A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failure. Missing adapters, unknown topology, and incomplete runs remain visible. NPU execution, remote-range numerical streaming, general quantized-safetensors support, parallel guided sessions, and distributed execution are outside the demonstrated release.
 
 ## Evidence and reproducibility
 
-The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.5/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
+The historical [verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.6/VERIFICATION.md) retains the earlier native observations, artifacts, failures, and the distinction between free and physical VRAM. The 0.4.6 return-use claim is additionally bound by the path-free cache-reuse receipt above and the versioned release notes. Full private machine/run files are not included in the public repository.
 
-The release contains **162 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks clean package installation and the installed support-receipt command. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, browser-interaction, package-identity, and public-install checks.
+The release contains **169 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks clean package installation and the installed support-receipt command. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, browser-interaction, package-identity, and public-install checks.
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
 

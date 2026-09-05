@@ -1,16 +1,26 @@
 # Releases and maintenance
 
-Documentation here targets **Aperture 0.4.5**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+Documentation here targets **Aperture 0.4.6**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+
+## 0.4.6: exact managed-GGUF return use
+
+A saved remote GGUF can now bind to the exact complete artifact already held in Aperture's managed cache before the application requests model-host metadata or weight-transfer approval. The cache key preserves the selected source, revision, representation, component names, declared sizes, and expected hashes. Aperture admits only regular files under the matching managed entry, then completely hashes every selected component and repeats native fit before loading.
+
+This changes the returning-user lifecycle without weakening the first-use gates. An incomplete cache, identity or size drift, a symbolic entry, or missing bytes remains a cache miss and follows the existing permissioned metadata, fit, and resumable-acquisition path. Safetensors remain on the prior verified acquisition path. Runtime installation and model execution still require their own approvals.
+
+A separate Windows x64 passage first populated the managed cache with the fixed Qwen2.5-0.5B-Instruct Q4_K_M artifact, revision `9217f5db79a29953eb74d5343926648285ec7e67`, SHA-256 `74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db`. The candidate then resumed the saved remote selection without network or download approval, repeated complete integrity and native-fit preparation, generated `FINAL CACHE PASS` on CUDA with 25 observed GPU layers at 2,048-token context, exited 0, and released its worker. This establishes one managed-cache lifecycle, not arbitrary cache import, a general offline guarantee, or broad model quality.
+
+The release package is built from package source commit `cfbc8222f932e43a6d4397cbc2ce4f1cb8131d97`. Two candidate builds produced the same 73,541-byte archive with SHA-256 `e19df7c51b6111215cbb1ca26562e405cf2c053dada49c1e340cbe8fe6670196` after 169 source/control tests and the installed-package smoke passed.
 
 ## 0.4.5: reduced hardware support receipts
 
-A new `aperture support` command turns the approved hardware inventory into a separate `aperture-support/1` JSON receipt. It retains CPU topology, RAM and allocation headroom, integrated and discrete graphics, NPU inventory, drivers, storage classes and capacities, external-link observations, runtime presence, scan status, and explicit unmeasured fields needed to investigate fit and backend failures.
+The `aperture support` command turns the approved hardware inventory into a separate `aperture-support/1` JSON receipt. It retains CPU topology, RAM and allocation headroom, integrated and discrete graphics, NPU inventory, drivers, storage classes and capacities, external-link observations, runtime presence, scan status, and explicit unmeasured fields needed to investigate fit and backend failures.
 
 The reduction excludes host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names and serials, network adapter names and addresses, model locations, prompts, generated text, credentials, and environment variables. Provider errors are collapsed to bounded classes. Labels shaped like PCI addresses, PnP identifiers, MAC addresses, or absolute paths are withheld. The command accepts scan, destination, and output controls only; it performs no model access, network request, runtime installation, inference, stress test, or automatic upload.
 
 The receipt is not anonymous. Hardware models, exact capacities, drivers, current headroom, scan timing, and its timestamp can still fingerprint a machine. The output therefore carries an explicit review-required classification. The hosted package matrix exercises the installed command on Windows, Linux, and macOS and rejects forbidden identifier fields, host names, home directories, and temporary paths. This qualifies the receipt mechanism, not external native inference or new backend compatibility.
 
-The release process also gains a guarded publisher. Release-branch builds must produce the same npm archive twice. A reviewed publication manifest fixes the expected package SHA-256 and byte count before merge. The main-branch publisher reruns tests and package installation, rebuilds twice, refuses an existing tag or release, creates the versioned assets, and dispatches post-publication documentation verification. Existing release assets remain immutable.
+The release process also gained a guarded publisher. Release-branch builds must produce the same npm archive twice. A reviewed publication manifest fixes the expected package SHA-256 and byte count before merge. The main-branch publisher reruns tests and package installation, rebuilds twice, refuses an existing tag or release, creates the versioned assets, and dispatches post-publication documentation verification. Existing release assets remain immutable.
 
 ## 0.4.4: bounded Windows hardware discovery
 
@@ -22,7 +32,7 @@ A separate public-package passage recorded 0.4.3 clean-cache installation, pre-d
 
 ## 0.4.3: fresh runtime installation
 
-Managed installation commands receive closed stdin while their output remains visible. This fixes a reproduced Windows first-use stall caused by inheriting the interactive controller input. An empty application home and npm cache completed pinned runtime installation, model acquisition, integrity verification, native assessment and CPU generation at 2048-token context. Existing Windows and Node installations were used; universal clean-machine support is not claimed. See the version-pinned verification record.
+Managed installation commands receive closed stdin while their output remains visible. This fixes a reproduced Windows first-use stall caused by inheriting the interactive controller input. An empty application home and npm cache completed pinned runtime installation, model acquisition, integrity verification, native assessment and CPU generation at 2,048-token context. Existing Windows and Node installations were used; universal clean-machine support is not claimed. See the version-pinned verification record.
 
 ## 0.4.2: native fit before download
 
@@ -30,7 +40,7 @@ Remote GGUF execution checks the selected model with the pinned native runtime b
 
 Windows checks preserve the original 0.5B checkpoint and 2,048-token context. The larger pinned 14B checkpoint remains a separately recorded refusal under constrained memory, distinct from the later successful 0.4.4 split.
 
-## 0.4.1 · Windows CUDA library discovery
+## 0.4.1: Windows CUDA library discovery
 
 Released September 5, 2026 UTC. Commit `f6b6e00c4c473d012922f8cdf5d25fe76a476f86`.
 
@@ -38,7 +48,7 @@ This correction discovers compatible installed CUDA libraries from bounded toolk
 
 Recorded acceptance includes Qwen2.5-0.5B Q4_K_M generation on RTX 3090 CUDA with 25 GPU layers and 2,048 context, followed by a two-turn chat and clean exit. See [the release](https://github.com/BigBirdReturns/aperture/releases/tag/v0.4.1) and [verification](https://github.com/BigBirdReturns/aperture/blob/v0.4.1/VERIFICATION.md).
 
-## 0.4.0 · Hardware-aware model runner
+## 0.4.0: hardware-aware model runner
 
 Released September 5, 2026 UTC. Commit `463aa08a0f70cf9cf34cea92a886aaa2200d1a5b`.
 
