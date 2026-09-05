@@ -1,13 +1,13 @@
 {
-    "name":  "Aperture",
-    "version":  "0.4.4",
-    "tag":  "v0.4.4",
-    "release_commit":  "1e319f1726886d98e272a8321907f3e89f470111",
-    "base_url":  "https://bigbirdreturns.github.io/aperture",
-    "repository":  "https://github.com/BigBirdReturns/aperture",
-    "package_url":  "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz",
-    "reviewed":  "2026-09-05",
-    "native_prefit_before_download":  true,
-    "package_sha256":  "268aef0268db0cd008678509d1eabed7dd72c432387254c21c8af66a30feb833",
-    "package_bytes":  68790
+    "name": "Aperture",
+    "version": "0.4.4",
+    "tag": "v0.4.4",
+    "release_commit": "97f9f538062d663c499df064a550b91f071acfd6",
+    "base_url": "https://bigbirdreturns.github.io/aperture",
+    "repository": "https://github.com/BigBirdReturns/aperture",
+    "package_url": "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.4/bigbirdreturns-aperture-0.4.4.tgz",
+    "reviewed": "2026-09-05",
+    "native_prefit_before_download": true,
+    "package_sha256": "0c3ddb0b987543affb096b22fa6f48deb03c475aaaca654dc4a8383312accdb4",
+    "package_bytes": 70601
 }
