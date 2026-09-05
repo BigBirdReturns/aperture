@@ -10,7 +10,7 @@ A GitHub repository package requires Git. The release-package command in [Get st
 
 ## I received an answer, but the model will not load
 
-The setup answer is provisional. In 0.4.2, native GGUF fitting precedes remote-weight acquisition and repeats after integrity checks before loading. Check available RAM, Windows commit headroom, the selected GPU and requested context. A refusal names the estimated resource shortfall without changing the model. A download completing is not successful admission.
+The setup answer is provisional. In 0.4.3, native GGUF fitting precedes remote-weight acquisition and repeats after integrity checks before loading. Check available RAM, Windows commit headroom, the selected GPU and requested context. A refusal names the estimated resource shortfall without changing the model. A download completing is not successful admission.
 
 Other workloads can change memory availability. Choose whether to close your own applications or use a different explicit configuration. Aperture does not terminate unrelated services. See [memory and placement](memory.md) for the distinction between a physical capacity, current headroom, and reserved budget.
 
@@ -57,3 +57,7 @@ An experiment runs two opt-in generations. Timing includes prompt processing; ma
 Use the repository's [bug report](https://github.com/BigBirdReturns/aperture/issues/new?template=bug.yml) or [model-support request](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml). Include the release, operating system, selected backend, model publisher/revision/representation, failing stage, and a minimal redacted error. Do not paste a complete machine snapshot or private model URL by default.
 
 Security-sensitive reports belong in the repository's [private security reporting](https://github.com/BigBirdReturns/aperture/security/advisories/new), not a public issue.
+
+## Runtime installation stalls before downloading
+
+Version 0.4.2 can stall on Windows when the installer inherits input already owned by the wizard. Version 0.4.3 closes stdin for managed commands while leaving progress output visible. Use the current versioned command; existing model files do not need to be deleted.

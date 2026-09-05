@@ -1,6 +1,6 @@
 # Supported paths and verified results
 
-This page describes the **0.4.2 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
+This page describes the **0.4.3 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
 
 ## Platform and runtime coverage
 
@@ -33,18 +33,22 @@ The integrated path produced `42` and retained `CEDAR83` across two chat turns o
 
 ## Current limitations that affect a first run
 
-Native fit before a large download is **not yet integrated**. The early answer is provisional. A checkpoint larger than physical accelerator memory has not yet completed the target acceptance trial. Automatic fitting may select zero GPU layers; that remains CPU execution.
+Native GGUF fit assessment precedes the complete weight-download prompt. The lightweight `--answer-only` result remains provisional. A checkpoint larger than physical accelerator memory has not yet completed the target acceptance trial. Automatic fitting may select zero GPU layers; that remains CPU execution.
 
 A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failure. Missing adapters, unknown topology, and incomplete runs remain visible. NPU execution, remote-range numerical streaming, general quantized-safetensors support, parallel guided sessions, and distributed execution are outside the demonstrated release.
 
 ## Evidence and reproducibility
 
-The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.2/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
+The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.3/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
 
-The release contains **108 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks package installation. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, and browser-interaction checks.
+The release contains **135 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks package installation. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, and browser-interaction checks.
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
 
-## Admission and regression checks in 0.4.2
+## Admission and regression checks in 0.4.3
 
 The ordinary Windows runner returned `42` with the fixed 0.5B Q4_K_M checkpoint on CPU and RTX 4060 CUDA, preserving 2,048 context and reading back zero and 25 GPU layers respectively. A CPU chat retained a public badge code across two turns and exited cleanly. Integrity hashing preceded final native assessment. The pinned 14B target checked 50 placements and refused before acquisition under the observed constrained budgets. This remains a refusal, not beyond-physical-memory inference. See the version-pinned verification record for exact boundaries.
+
+## Fresh installation in 0.4.3
+
+A Windows x64 empty-home and empty-npm-cache run installed the pinned runtime, downloaded and hash-verified the original 491,400,032-byte 0.5B checkpoint, and generated `42` on CPU with 2048 context and one sequence. No existing managed runtime or model was reused. Windows and Node were already installed. This is separate from GPU and beyond-physical-memory qualification.
