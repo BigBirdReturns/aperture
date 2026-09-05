@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Windows hardware discovery now separates core CPU, memory, graphics, neural-device and external-link observations from extended storage and network inventory. Both groups run concurrently with independent bounds, so a slow extended provider no longer erases core facts. A public 0.4.3 package passage on a separate Windows host also records clean-cache installation, pre-download native fit, provider-hash verification, CUDA generation, two-turn context retention, and clean process release.
+
 ## 0.4.3
 
 Fix fresh native-runtime installation when the interactive controller owns open stdin. Managed commands receive EOF while preserving stdout/stderr. Two regression controls accompany a verified empty-home and empty-cache Windows download-to-answer run with the fixed 0.5B model and 2048-token context. Existing release assets are unchanged.

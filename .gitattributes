@@ -6,3 +6,5 @@ docs/assets/*.css text eol=lf
 docs/assets/*.js text eol=lf
 docs/templates/*.html text eol=lf
 tools/*.py text eol=lf
+verification/*.json text eol=lf
+verification/*.md text eol=lf

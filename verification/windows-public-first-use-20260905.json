@@ -1,0 +1,94 @@
+{
+  "boundaries": [
+    "One additional Windows machine, not universal platform qualification.",
+    "Initial detailed PowerShell inventory timed out once; a later refresh completed.",
+    "A node-llama-cpp control-token warning was emitted; generation and chat completed.",
+    "Generation timing is not a decode-only benchmark.",
+    "No checkpoint larger than physical GPU capacity executed here."
+  ],
+  "classification": "PUBLIC_PACKAGE_FIRST_USE_CUDA_AND_TWO_TURN_CHAT_OBSERVED",
+  "distribution": {
+    "cleanNpmCacheInstall": true,
+    "packageBytes": 68389,
+    "packageSha256": "0bf13b2fbebba34af5796ca80b72d8ad801adbf8360bdb5eb2e621fb5febaea8",
+    "packageUrl": "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz",
+    "release": "v0.4.3",
+    "releaseCommit": "de2e030cf86539ca4a5b5a093503f0abd82ce689"
+  },
+  "machineClass": {
+    "anotherGpuWorkloadPreserved": true,
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "platform": "Windows x64",
+    "selectedAccelerator": "NVIDIA GeForce RTX 3090",
+    "selectedDeviceWasIdle": true
+  },
+  "observations": {
+    "actualBackend": "cuda",
+    "actualContext": 2048,
+    "actualGpuLayers": 25,
+    "cleanChatExit": true,
+    "downloadProviderHashVerified": true,
+    "estimatedGpuLayers": 25,
+    "nativeFitBeforeFullWeightDownload": "FITS_ESTIMATE",
+    "oneAnswerCompleted": true,
+    "ownedProcessesAfterExit": 0,
+    "prefitCheckpointAcquired": false,
+    "runtime": "node-llama-cpp@3.20.0",
+    "twoTurnContextRetentionCompleted": true
+  },
+  "observedAtUtc": "2026-09-05T18:02:20.5918875Z",
+  "privateEvidence": {
+    "evidenceHashes": [
+      {
+        "bytes": 2428,
+        "name": "help.log",
+        "sha256": "3d700c9e6419895f10967421f3c5fe64f2bc54b0be7601c5454087e97b09db1f"
+      },
+      {
+        "bytes": 10698,
+        "name": "first-use-cuda-device1.log",
+        "sha256": "45e8638e1839af127f1517c9a4cee039dd69e54611dbc3aee167cce9bf8967e8"
+      },
+      {
+        "bytes": 5430,
+        "name": "answer.json",
+        "sha256": "ae4dee1500721f477594ac8fe10dfc1580692d2ea0c57778fbeb1f89c1584667"
+      },
+      {
+        "bytes": 5920,
+        "name": "two-turn-chat.log",
+        "sha256": "976d1b803079398ce5ebdeb5f4c61f6e123fcc2d11e63d2aa5b9a5e92feb50a7"
+      },
+      {
+        "bytes": 423,
+        "name": "cleanup-observation.json",
+        "sha256": "3cce5958ca4c3017a74f286bf3fed96860ffb060e171c9d3abc71ed4c50aa8f5"
+      },
+      {
+        "bytes": 3292,
+        "name": "release-observation.json",
+        "sha256": "79c3d11cd4d9fbc9dac538ad94200ea235ff627e3d25c09715ee6c8fe0c21fac"
+      },
+      {
+        "bytes": 68389,
+        "name": "bigbirdreturns-aperture-0.4.3.tgz",
+        "sha256": "0bf13b2fbebba34af5796ca80b72d8ad801adbf8360bdb5eb2e621fb5febaea8"
+      }
+    ],
+    "pathsPromptsGpuUuidsPublished": false,
+    "retainedLocally": true
+  },
+  "request": {
+    "artifactBytes": 491400032,
+    "artifactSha256": "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
+    "backend": "cuda",
+    "contextPerSequence": 2048,
+    "contextReduction": false,
+    "model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "modelSubstitution": false,
+    "repository": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "9217f5db79a29953eb74d5343926648285ec7e67",
+    "sequences": 1
+  },
+  "schema": "aperture-public-verification/1"
+}
