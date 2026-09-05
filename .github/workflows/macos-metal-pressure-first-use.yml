@@ -30,10 +30,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $root = Join-Path $env:RUNNER_TEMP 'aperture-macos-pressure'
-          $home = Join-Path $root 'home'
+          $apertureHome = Join-Path $root 'home'
           $cache = Join-Path $root 'npm-cache'
           $public = Join-Path $root 'public'
-          New-Item -ItemType Directory -Path $home,$cache,$public -Force | Out-Null
+          New-Item -ItemType Directory -Path $apertureHome,$cache,$public -Force | Out-Null
 
           $packOutput = (& npm pack --json 2>&1 | Out-String)
           if ($LASTEXITCODE -ne 0) { throw "npm pack failed: $packOutput" }
@@ -52,7 +52,7 @@ jobs:
           $pressurePercent = [double]$pressureMatch.Groups[1].Value
 
           $supportFile = Join-Path $public 'support.json'
-          & npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $home --out $supportFile
+          & npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $apertureHome --out $supportFile
           if ($LASTEXITCODE -ne 0) { throw 'Candidate support scan failed.' }
           $support = Get-Content -Raw -LiteralPath $supportFile | ConvertFrom-Json
           if ($support.runtime.platform -ne 'darwin' -or $support.runtime.architecture -ne 'arm64') { throw 'Unexpected qualification platform.' }
@@ -64,7 +64,7 @@ jobs:
           $oldPreference = $ErrorActionPreference
           $ErrorActionPreference = 'Continue'
           & npx --yes --cache $cache "--package=$package" aperture setup `
-            --home $home --model $env:MODEL_URL --context 2048 --parallel 1 --backend metal `
+            --home $apertureHome --model $env:MODEL_URL --context 2048 --parallel 1 --backend metal `
             --allow-scan --allow-network --allow-download --allow-install --allow-run `
             --prompt 'What is 6 multiplied by 7? Reply with the two digits only.' `
             --tokens 8 --seconds 600 2>&1 | Tee-Object -FilePath $executionLog
@@ -72,9 +72,9 @@ jobs:
           $ErrorActionPreference = $oldPreference
           if ($executionExit -ne 0) { throw "Candidate Metal execution exited $executionExit." }
 
-          $fitFile = Get-ChildItem (Join-Path $home 'fits') -Filter assessment.json -Recurse -ErrorAction Stop |
+          $fitFile = Get-ChildItem (Join-Path $apertureHome 'fits') -Filter assessment.json -Recurse -ErrorAction Stop |
             Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
-          $summaryFile = Get-ChildItem (Join-Path $home 'runs') -Filter summary.json -Recurse -ErrorAction Stop |
+          $summaryFile = Get-ChildItem (Join-Path $apertureHome 'runs') -Filter summary.json -Recurse -ErrorAction Stop |
             Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           if (-not $fitFile -or -not $summaryFile) { throw 'Native fit or run receipt is missing.' }
           $fit = Get-Content -Raw -LiteralPath $fitFile.FullName | ConvertFrom-Json
@@ -86,7 +86,7 @@ jobs:
           if ([int]$summary.requestedContext -ne 2048 -or [int]$summary.observedContext -lt 2048 -or [int]$summary.observedContext -gt 2303) { throw 'Context requirement was not preserved.' }
           if (($summary.text | Out-String).Trim() -ne '42') { throw "Arithmetic smoke assertion failed: $($summary.text)" }
 
-          $modelFile = Get-ChildItem (Join-Path $home 'models') -File -Recurse -ErrorAction Stop |
+          $modelFile = Get-ChildItem (Join-Path $apertureHome 'models') -File -Recurse -ErrorAction Stop |
             Where-Object { $_.Length -eq [int64]$env:MODEL_BYTES } | Select-Object -First 1
           if (-not $modelFile) { throw 'Pinned model artifact was not found after acquisition.' }
           $modelHash = (Get-FileHash -LiteralPath $modelFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
