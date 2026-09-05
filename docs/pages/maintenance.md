@@ -30,6 +30,8 @@ Resolve the exact release commit and actual package asset first. Update the vers
 
 The documentation workflow builds and checks the site on a branch and pull request. Only a non-pull-request run on `main` uploads the reviewed `_site` directory to GitHub Pages. Runtime checks run separately. Do not publish worktree contents, raw local receipts, model weights, credentials, or font files.
 
+Before replacing the live site, the main-branch build verifies that its exact versioned package is publicly downloadable and matches its recorded hash, size, and embedded version. Missing or incomplete publication coordinates stop the build before Pages upload, leaving the existing site in place. Preparing a future runtime version on a branch does not require publishing that candidate first; the public-package gate runs only on main.
+
 After deployment, the same workflow verifies every public file against its uploaded Pages artifact, checks the canonical URL and social-card metadata, verifies the release package hash and embedded version, and runs the public command with `--version` in a fresh npm cache. It then exercises the actual HTTPS site in Chromium, including search, four real clipboard combinations, installation navigation, keyboard access, no-JavaScript reading, and missing-page recovery. A failed public check makes the workflow fail even when the deployment step succeeded. Evidence is retained in the `public-release-checks` workflow artifact for 14 days. These checks do not run a model or establish hardware support.
 
 For a separate verification of an unchanged live deployment, build `_site`, then run:

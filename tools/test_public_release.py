@@ -177,6 +177,55 @@ class PublicReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "runtime state"):
                 verify_install(metadata(), self.root)
 
+    def test_incomplete_release_reports_field(self):
+        for field in ("version", "tag", "base_url", "repository", "package_url",
+                      "package_sha256", "release_commit"):
+            with self.subTest(field=field):
+                meta = metadata(); meta[field] = None
+                with self.assertRaisesRegex(ValueError, "incomplete: " + field):
+                    validate_release(meta)
+        with self.assertRaises(ValueError):
+            validate_release(None)
+
+    def test_preflight_does_not_compare_future_pages_to_old_site(self):
+        from contextlib import redirect_stdout
+        from check_public_release import main
+        source = self.root / "site"; source.mkdir()
+        (source / "assets").mkdir()
+        (source / "assets/social-preview.png").write_bytes(b"fixture")
+        (source / "index.html").write_bytes(social())
+        (source / "release.json").write_text(json.dumps(metadata()), encoding="utf-8")
+        output = self.root / "result"
+        arguments = ["check", "--site", str(source), "--out", str(output), "--preflight"]
+        with patch("sys.argv", arguments), patch("check_public_release.compare_live") as live, \
+                patch("check_public_release.verify_package", return_value={"verified": True}) as package, \
+                patch("check_public_release.verify_install") as install, redirect_stdout(io.StringIO()):
+            self.assertEqual(main(), 0)
+        live.assert_not_called(); install.assert_not_called(); package.assert_called_once()
+        report = json.loads((output / "public-release-check.json").read_text())
+        self.assertEqual(report["phase"], "BEFORE_DEPLOYMENT")
+        self.assertFalse(report["live_site_checked"])
+        self.assertEqual(report["status"], "PASSED")
+
+    def test_incomplete_preflight_stops_before_network(self):
+        from contextlib import redirect_stdout
+        from check_public_release import main
+        source = self.root / "site"; source.mkdir()
+        (source / "assets").mkdir()
+        (source / "assets/social-preview.png").write_bytes(b"fixture")
+        (source / "index.html").write_bytes(social())
+        meta = metadata(); meta["package_sha256"] = None
+        (source / "release.json").write_text(json.dumps(meta), encoding="utf-8")
+        output = self.root / "result"
+        arguments = ["check", "--site", str(source), "--out", str(output), "--preflight"]
+        with patch("sys.argv", arguments), patch("check_public_release.compare_live") as live, \
+                patch("check_public_release.verify_package") as package, redirect_stdout(io.StringIO()):
+            self.assertEqual(main(), 1)
+        live.assert_not_called(); package.assert_not_called()
+        report = json.loads((output / "public-release-check.json").read_text())
+        self.assertIn("incomplete: package_sha256", report["error"])
+        self.assertEqual(report["status"], "FAILED")
+
 
 if __name__ == "__main__":
     unittest.main()

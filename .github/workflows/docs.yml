@@ -31,6 +31,17 @@ jobs:
         with:
           name: documentation-browser-checks
           path: ${{ runner.temp }}/docs-browser
+      - name: Verify the published package before Pages upload
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: >-
+          python tools/check_public_release.py --site _site
+          --out "${{ runner.temp }}/release-preflight" --preflight
+      - uses: actions/upload-artifact@v4
+        if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: release-preflight
+          path: ${{ runner.temp }}/release-preflight
+          retention-days: 14
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
