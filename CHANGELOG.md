@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+A complete GGUF already present in Aperture's managed cache is now bound locally before remote native-fit metadata or weight-acquisition permission is requested. The cache key preserves the selected source, revision, representation, component sizes, and expected hashes; complete integrity hashing still repeats before loading. Incomplete transfers retain the existing explicit permission and resumable-acquisition path. Safetensors reuse remains on the existing full verification and acquisition path.
+
 ## 0.4.5
 
 Add a permissioned `aperture support` command that scans the same CPU, RAM, integrated and discrete graphics, NPU, storage, link, and runtime inventory used by planning, then emits a reduced JSON receipt for external support. The receipt excludes host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names and serials, network adapter names and addresses, model locations, prompts, output, credentials, and environment variables. Provider failures are reduced to bounded classes, and identifier-shaped labels are withheld. It retains hardware classes, drivers, capacities, current headroom, scan status, and explicit unmeasured fields. The file is not anonymous and must be reviewed before sharing.

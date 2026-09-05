@@ -58,7 +58,7 @@ Use model and execution flags during **setup**. Resumed execution refuses flags 
 | --- | --- |
 | `--allow-scan` | Hardware and selected-path observations. For `support`, this is the only operation permission. |
 | `--allow-network` | Bounded model metadata requests. |
-| `--allow-download` | Acquisition or reuse of the exact selected weights. |
+| `--allow-download` | Downloading or resuming missing bytes for the exact selected weights. A complete managed cache is reused without this permission. |
 | `--allow-install` | Installation of the isolated, pinned native runtime. |
 | `--allow-run` | Local execution of the selected configuration. |
 
