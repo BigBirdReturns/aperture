@@ -13,6 +13,7 @@ try{
   const info=JSON.parse(run(['pack','--json','--pack-destination',tmp]));
   const archive=path.join(tmp,info[0].filename);
   const output=run(['exec','--yes','--package',archive,'--','aperture','--version']).trim();
-  if(!output.endsWith('0.3.0'))throw new Error('Installed executable version mismatch: '+output);
+  const expected=JSON.parse(await fs.readFile(path.join(root,'package.json'),'utf8')).version;
+  if(output!==expected)throw new Error('Installed executable version mismatch: '+output);
   console.log('Clean npm package install and executable version: PASS');
 }finally{await fs.rm(tmp,{recursive:true,force:true});}
