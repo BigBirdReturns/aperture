@@ -1,0 +1,152 @@
+name: Candidate macOS Metal pressure-aware first use
+
+on:
+  push:
+    branches:
+      - qualification/macos-metal-v0.4.6-pressure-20260905
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-metal-pressure-first-use
+  cancel-in-progress: true
+
+jobs:
+  metal:
+    runs-on: macos-26-arm64
+    timeout-minutes: 30
+    env:
+      MODEL_URL: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf
+      MODEL_SHA256: 74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db
+      MODEL_BYTES: '491400032'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Pack the candidate and execute the fixed Metal passage
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'aperture-macos-pressure'
+          $home = Join-Path $root 'home'
+          $cache = Join-Path $root 'npm-cache'
+          $public = Join-Path $root 'public'
+          New-Item -ItemType Directory -Path $home,$cache,$public -Force | Out-Null
+
+          $packOutput = (& npm pack --json 2>&1 | Out-String)
+          if ($LASTEXITCODE -ne 0) { throw "npm pack failed: $packOutput" }
+          $pack = @($packOutput | ConvertFrom-Json)[0]
+          $package = Join-Path $env:GITHUB_WORKSPACE $pack.filename
+          if (-not (Test-Path -LiteralPath $package -PathType Leaf)) { throw 'Candidate package was not created.' }
+          $packageHash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash.ToLowerInvariant()
+          $packageBytes = (Get-Item -LiteralPath $package).Length
+          $version = (& npx --yes --cache $cache "--package=$package" aperture --version 2>&1 | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $version -ne '0.4.6') { throw "Installed candidate version mismatch: $version" }
+
+          $rawFreeBefore = [int64](& node -e "const os=require('os');process.stdout.write(String(os.freemem()))")
+          $pressureText = (& /usr/bin/memory_pressure -Q 2>&1 | Out-String).Trim()
+          $pressureMatch = [regex]::Match($pressureText,'System-wide memory free percentage:\s*(\d+(?:\.\d+)?)%','IgnoreCase')
+          if (-not $pressureMatch.Success) { throw 'macOS pressure percentage was not observable.' }
+          $pressurePercent = [double]$pressureMatch.Groups[1].Value
+
+          $supportFile = Join-Path $public 'support.json'
+          & npx --yes --cache $cache "--package=$package" aperture support --allow-scan --home $home --out $supportFile
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate support scan failed.' }
+          $support = Get-Content -Raw -LiteralPath $supportFile | ConvertFrom-Json
+          if ($support.runtime.platform -ne 'darwin' -or $support.runtime.architecture -ne 'arm64') { throw 'Unexpected qualification platform.' }
+          if ($support.memory.basis -notmatch 'memory_pressure') { throw "Pressure-aware basis absent: $($support.memory.basis)" }
+          if ([int64]$support.memory.availableBytes -le $rawFreeBefore) { throw 'Pressure-aware headroom did not exceed the raw free-page observation.' }
+          if ([int64]$support.memory.allocationHeadroomBytes -ne [int64]$support.memory.availableBytes) { throw 'Unexpected macOS allocation-headroom reduction.' }
+
+          $executionLog = Join-Path $root 'execution.log'
+          $oldPreference = $ErrorActionPreference
+          $ErrorActionPreference = 'Continue'
+          & npx --yes --cache $cache "--package=$package" aperture setup `
+            --home $home --model $env:MODEL_URL --context 2048 --parallel 1 --backend metal `
+            --allow-scan --allow-network --allow-download --allow-install --allow-run `
+            --prompt 'What is 6 multiplied by 7? Reply with the two digits only.' `
+            --tokens 8 --seconds 600 2>&1 | Tee-Object -FilePath $executionLog
+          $executionExit = $LASTEXITCODE
+          $ErrorActionPreference = $oldPreference
+          if ($executionExit -ne 0) { throw "Candidate Metal execution exited $executionExit." }
+
+          $fitFile = Get-ChildItem (Join-Path $home 'fits') -Filter assessment.json -Recurse -ErrorAction Stop |
+            Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          $summaryFile = Get-ChildItem (Join-Path $home 'runs') -Filter summary.json -Recurse -ErrorAction Stop |
+            Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if (-not $fitFile -or -not $summaryFile) { throw 'Native fit or run receipt is missing.' }
+          $fit = Get-Content -Raw -LiteralPath $fitFile.FullName | ConvertFrom-Json
+          $summary = Get-Content -Raw -LiteralPath $summaryFile.FullName | ConvertFrom-Json
+          if ($fit.status -ne 'FITS_ESTIMATE' -or [int]$fit.selected.gpuLayers -le 0) { throw 'The candidate did not admit a Metal placement.' }
+          if ($summary.status -ne 'GENERATED_NOT_TASK_QUALIFIED') { throw "Unexpected native status: $($summary.status)" }
+          if ($summary.backend -ne 'metal') { throw "Unexpected native backend: $($summary.backend)" }
+          if ([int]$summary.observedGpuLayers -le 0) { throw 'No model layers were observed on Metal.' }
+          if ([int]$summary.requestedContext -ne 2048 -or [int]$summary.observedContext -lt 2048 -or [int]$summary.observedContext -gt 2303) { throw 'Context requirement was not preserved.' }
+          if (($summary.text | Out-String).Trim() -ne '42') { throw "Arithmetic smoke assertion failed: $($summary.text)" }
+
+          $modelFile = Get-ChildItem (Join-Path $home 'models') -File -Recurse -ErrorAction Stop |
+            Where-Object { $_.Length -eq [int64]$env:MODEL_BYTES } | Select-Object -First 1
+          if (-not $modelFile) { throw 'Pinned model artifact was not found after acquisition.' }
+          $modelHash = (Get-FileHash -LiteralPath $modelFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($modelHash -ne $env:MODEL_SHA256) { throw 'Pinned model digest mismatch.' }
+
+          $record = [ordered]@{
+            schema = 'aperture-native-verification/macos-metal-pressure@1'
+            observedAt = (Get-Date).ToUniversalTime().ToString('o')
+            candidate = [ordered]@{
+              commit = $env:GITHUB_SHA
+              version = $version
+              packageBytes = $packageBytes
+              packageSHA256 = $packageHash
+            }
+            runner = [ordered]@{
+              operatingSystem = (sw_vers -productVersion)
+              architecture = (uname -m)
+              node = (node --version)
+              githubHosted = $true
+            }
+            memory = [ordered]@{
+              totalBytes = [int64]$support.memory.totalBytes
+              rawFreeBytesBefore = $rawFreeBefore
+              pressureFreePercent = $pressurePercent
+              admittedAvailableBytes = [int64]$support.memory.availableBytes
+              allocationHeadroomBytes = [int64]$support.memory.allocationHeadroomBytes
+              basis = $support.memory.basis
+            }
+            request = [ordered]@{
+              model = 'qwen2.5-0.5b-instruct-q4_k_m.gguf'
+              revision = '9217f5db79a29953eb74d5343926648285ec7e67'
+              bytes = [int64]$env:MODEL_BYTES
+              sha256 = $modelHash
+              backend = 'metal'
+              contextTokens = 2048
+              sequences = 1
+            }
+            native = [ordered]@{
+              predownloadFit = $fit.status
+              estimatedGpuLayers = [int]$fit.selected.gpuLayers
+              actualBackend = $summary.backend
+              observedGpuLayers = [int]$summary.observedGpuLayers
+              requestedContext = [int]$summary.requestedContext
+              observedContext = [int]$summary.observedContext
+              outputAssertion = '42'
+              exitCode = $executionExit
+            }
+            boundaries = @(
+              'GitHub-hosted Apple Silicon runner, not an unrelated public tester or a clean operating-system image.'
+              'Pressure-aware available memory includes reclaimable capacity and shares one pool with Metal; it is not a second memory bank.'
+              'The arithmetic answer is a smoke assertion, not broad model-quality or throughput evidence.'
+              'No native Intel Mac, discrete Mac GPU, Apple Neural Engine, or arbitrary model compatibility claim follows.'
+            )
+          }
+          $recordFile = Join-Path $public 'macos-metal-pressure.json'
+          $record | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $recordFile -Encoding utf8
+          Write-Host ('APERTURE_MACOS_METAL_PRESSURE ' + ($record | ConvertTo-Json -Depth 20 -Compress))
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aperture-candidate-macos-metal-pressure
+          path: ${{ runner.temp }}/aperture-macos-pressure/public
+          if-no-files-found: error
+          retention-days: 30
