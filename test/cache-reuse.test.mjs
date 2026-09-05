@@ -36,6 +36,10 @@ test('an incomplete remote descriptor is a cache miss',async()=>{
   assert.equal(await reuseCachedAcquisition({kind:'gguf',local:false},destination()),null);
 });
 
+test('safetensors cache reuse stays on the existing verified acquisition path',async()=>{
+  assert.equal(await reuseCachedAcquisition({...model,kind:'hf'},destination()),null);
+});
+
 
 test('complete cache binds the remote selection without network or transfer',async()=>{
   const dir=await seed();
