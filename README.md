@@ -32,6 +32,12 @@ Use `/new` for a fresh chat and `/exit` to release the model. Saved configuratio
 
 > **Current first-use limit:** the configuration shown before download is provisional. In 0.4.1, remote weights may be acquired before the definitive native fit check. Review available resources before approving a large download. Moving native fit ahead of acquisition is pending, not a released feature.
 
+### Development: native fit before acquisition
+
+The development code now assesses GGUF memory requirements before asking to acquire remote weights. Runtime installation still needs separate permission. The assessor reads bounded prefixes from all selected shards, capped at 8 MiB each and 64 MiB total. Prefixes may include initial tensor bytes; they do not acquire the full checkpoint. Context, sequence count, selected device, and explicit GPU-layer requests are preserved. Automatic placement searches for the highest estimated fitting layer count, not an optimal-speed configuration.
+
+A non-fitting or unavailable assessment stops acquisition and explains the resource shortfall. After acquisition, the same assessment runs again against refreshed observations before loading, with native memory checks still enabled and actual GPU-layer readback checked. Shared RAM remains non-additive. These are pinned-runtime estimates and may use its estimation fallback; a fit is not architecture or performance qualification. `--answer-only` remains a lightweight candidate answer without native installation or assessment. The versioned 0.4.1 commands above do not include this development change; see the candidate observations in [VERIFICATION.md](VERIFICATION.md).
+
 ## What is available
 
 Local GGUF files and complete shard sets, extensionless GGUF blobs, Hugging Face repository/file links, and direct HTTPS GGUF files are supported for inspection. Safetensors inspection and a Python/Accelerate compatibility route are also present, with separate runtime prerequisites. Model architecture support depends on the pinned runtime.
