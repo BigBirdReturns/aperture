@@ -1,0 +1,177 @@
+name: Build and publish a versioned release
+on:
+  push:
+    branches: [main, 'release/**']
+permissions:
+  contents: read
+jobs:
+  candidate:
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm test
+      - run: node scripts/package-smoke.mjs
+      - name: Build the package twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pack-a" "${RUNNER_TEMP}/pack-b" "${RUNNER_TEMP}/candidate"
+          npm pack --json --pack-destination "${RUNNER_TEMP}/pack-a" > "${RUNNER_TEMP}/pack-a.json"
+          npm pack --json --pack-destination "${RUNNER_TEMP}/pack-b" > "${RUNNER_TEMP}/pack-b.json"
+          package_name="$(node -e "const fs=require('fs');console.log(JSON.parse(fs.readFileSync(process.argv[1]))[0].filename)" "${RUNNER_TEMP}/pack-a.json")"
+          cmp "${RUNNER_TEMP}/pack-a/${package_name}" "${RUNNER_TEMP}/pack-b/${package_name}"
+          cp "${RUNNER_TEMP}/pack-a/${package_name}" "${RUNNER_TEMP}/candidate/${package_name}"
+          PACKAGE_PATH="${RUNNER_TEMP}/candidate/${package_name}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import childProcess from 'node:child_process';
+          const path=process.env.PACKAGE_PATH;
+          const bytes=fs.readFileSync(path);
+          const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+          const record={
+            schema:'aperture-release-candidate/1',
+            version:pkg.version,
+            sourceCommit:process.env.GITHUB_SHA,
+            sourceTree:childProcess.execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(),
+            packageName:path.split(/[\\/]/).pop(),
+            packageBytes:bytes.length,
+            packageSHA256:crypto.createHash('sha256').update(bytes).digest('hex'),
+            twoBuildsByteIdentical:true,
+            testsRun:true,
+            packageInstallSmokeRun:true
+          };
+          fs.writeFileSync(process.env.RUNNER_TEMP+'/candidate/candidate.json',JSON.stringify(record,null,2)+'\n');
+          console.log('APERTURE_RELEASE_CANDIDATE '+JSON.stringify(record));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aperture-release-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/candidate
+          retention-days: 14
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: trigger
+        name: Require a changed publication manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="${{ github.event.before }}"
+          if [[ "$before" =~ ^0+$ ]]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$before" "${GITHUB_SHA}" -- | grep -Fxq 'release/publish.json'; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.trigger.outputs.publish == 'true'
+        with:
+          node-version: 24
+      - name: Validate publication coordinates
+        if: steps.trigger.outputs.publish == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const release=JSON.parse(fs.readFileSync('release/publish.json','utf8'));
+          const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+          const versionSource=fs.readFileSync('lib/version.mjs','utf8').match(/VERSION\s*=\s*'([^']+)'/)?.[1];
+          const required=['version','title','notes','packageSourceCommit','expectedPackageSHA256','expectedPackageBytes'];
+          for(const key of required)if(release[key]===undefined||release[key]===null||release[key]==='')throw new Error('Publication manifest is incomplete: '+key);
+          if(!/^\d+\.\d+\.\d+$/.test(release.version)||release.version!==pkg.version||release.version!==versionSource)throw new Error('Release and executable versions disagree.');
+          if(!/^[0-9a-f]{40}$/.test(release.packageSourceCommit))throw new Error('packageSourceCommit must be an exact commit.');
+          if(!/^[0-9a-f]{64}$/.test(release.expectedPackageSHA256))throw new Error('expectedPackageSHA256 must be exact.');
+          if(!Number.isSafeInteger(release.expectedPackageBytes)||release.expectedPackageBytes<1)throw new Error('expectedPackageBytes must be positive.');
+          if(!/^release\/[0-9A-Za-z._-]+\.md$/.test(release.notes))throw new Error('Release notes must be a repository release Markdown file.');
+          if(!fs.existsSync(release.notes))throw new Error('Release notes file is missing.');
+          NODE
+          source_commit="$(node -p "JSON.parse(require('fs').readFileSync('release/publish.json')).packageSourceCommit")"
+          git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA"
+          version="$(node -p "require('./package.json').version")"
+          tag="v${version}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists" >&2
+            exit 1
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release ${tag} already exists" >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Qualify and build exact assets
+        if: steps.trigger.outputs.publish == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test
+          node scripts/package-smoke.mjs
+          mkdir -p "${RUNNER_TEMP}/release/a" "${RUNNER_TEMP}/release/b" "${RUNNER_TEMP}/release/final"
+          npm pack --json --pack-destination "${RUNNER_TEMP}/release/a" > "${RUNNER_TEMP}/release/a.json"
+          npm pack --json --pack-destination "${RUNNER_TEMP}/release/b" > "${RUNNER_TEMP}/release/b.json"
+          package_name="$(node -e "const fs=require('fs');console.log(JSON.parse(fs.readFileSync(process.argv[1]))[0].filename)" "${RUNNER_TEMP}/release/a.json")"
+          cmp "${RUNNER_TEMP}/release/a/${package_name}" "${RUNNER_TEMP}/release/b/${package_name}"
+          cp "${RUNNER_TEMP}/release/a/${package_name}" "${RUNNER_TEMP}/release/final/${package_name}"
+          PACKAGE_PATH="${RUNNER_TEMP}/release/final/${package_name}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          const release=JSON.parse(fs.readFileSync('release/publish.json','utf8'));
+          const bytes=fs.readFileSync(process.env.PACKAGE_PATH);
+          const sha=crypto.createHash('sha256').update(bytes).digest('hex');
+          if(bytes.length!==release.expectedPackageBytes||sha!==release.expectedPackageSHA256)throw new Error(`Package identity mismatch: ${bytes.length} ${sha}`);
+          NODE
+          version="$(node -p "require('./package.json').version")"
+          git archive --format=zip --output "${RUNNER_TEMP}/release/final/aperture-${version}-source.zip" HEAD
+          PACKAGE_PATH="${RUNNER_TEMP}/release/final/${package_name}" SOURCE_PATH="${RUNNER_TEMP}/release/final/aperture-${version}-source.zip" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import childProcess from 'node:child_process';
+          const release=JSON.parse(fs.readFileSync('release/publish.json','utf8'));
+          const identify=path=>{const data=fs.readFileSync(path);return{bytes:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex')}};
+          const pkg=identify(process.env.PACKAGE_PATH),source=identify(process.env.SOURCE_PATH);
+          const record={
+            schema:'aperture-release-manifest/1',name:'Aperture',version:release.version,tag:'v'+release.version,
+            releaseCommit:process.env.GITHUB_SHA,releaseTree:childProcess.execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(),
+            packageSourceCommit:release.packageSourceCommit,
+            package:{name:process.env.PACKAGE_PATH.split(/[\\/]/).pop(),...pkg},
+            source:{name:process.env.SOURCE_PATH.split(/[\\/]/).pop(),...source},
+            builtTwiceByteIdentical:true,testsRun:true,packageInstallSmokeRun:true
+          };
+          fs.writeFileSync(process.env.RUNNER_TEMP+'/release/final/release-manifest.json',JSON.stringify(record,null,2)+'\n');
+          NODE
+          (cd "${RUNNER_TEMP}/release/final" && sha256sum "${package_name}" "aperture-${version}-source.zip" release-manifest.json > SHA256SUMS.txt)
+      - name: Publish immutable successor release
+        if: steps.trigger.outputs.publish == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          title="$(node -p "JSON.parse(require('fs').readFileSync('release/publish.json')).title")"
+          notes="$(node -p "JSON.parse(require('fs').readFileSync('release/publish.json')).notes")"
+          gh release create "v${version}" "${RUNNER_TEMP}/release/final/"* --target "$GITHUB_SHA" --title "$title" --notes-file "$notes"
+          gh release view "v${version}" --json tagName,targetCommitish,isDraft,isPrerelease,assets > "${RUNNER_TEMP}/release/published.json"
+          cat "${RUNNER_TEMP}/release/published.json"
+          gh workflow run docs.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.trigger.outputs.publish == 'true'
+        with:
+          name: aperture-published-release-${{ github.sha }}
+          path: ${{ runner.temp }}/release
+          retention-days: 30
