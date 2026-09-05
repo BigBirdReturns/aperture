@@ -38,3 +38,22 @@ test('Contradictory CPU and GPU backend requests fail',()=>assert.throws(()=>mak
 test('Thread request above usable CPU count fails',()=>assert.throws(()=>makePlan(machine,model,{threads:99}),/Thread count/));
 test('Runtime options preserve explicit context and CPU threads',()=>{const p=makePlan(machine,model,{backend:'vulkan',context:8192,contextExplicit:true,threads:3});const o=nativeOptions(p);assert.equal(o.context.contextSize,8192);assert.equal(o.context.threads,3);assert.equal(o.context.failedCreationRemedy,false);});
 test('Vulkan padding uses native free capacity, not a fictional VRAM sum',()=>{const p=makePlan(machine,model,{backend:'vulkan'});p.method.gpuBudgetBytes=GiB;p.method.nativeObservation={vram:{free:4*GiB}};assert.equal(nativeOptions(p).llama.vramPadding,3*GiB);});
+
+test('A supervised numerical worker receives stdin EOF without consuming controller input',async()=>{const {supervised}=await import('../lib/run.mjs');const r=await supervised(process.execPath,['-e',"process.stdin.on('end',()=>process.exit(0));process.stdin.resume()"],process.env,2);assert.equal(r.code,0);assert.equal(r.stopped,false);});
+test('Automatic routing can use CPU when dedicated GPUs have no reserved headroom',()=>{
+  const m={...machine,gpu:{devices:[{name:'RTX Test',uuid:'GPU-test',totalBytes:24*GiB,freeBytes:GiB,externalGate:false}],appleUnifiedMemory:false}};
+  const p=makePlan(m,model);assert.equal(p.method.backend,'cpu');assert.equal(p.blockers.length,0);assert.equal(p.method.backendFallback,'CPU_AFTER_LOW_GPU_HEADROOM');
+});
+test('Vulkan cannot bypass an existing accelerator capacity gate',()=>{
+  const m={...machine,gpu:{devices:[{name:'CMP Test',freeBytes:GiB,externalGate:true}]}};
+  assert.throws(()=>deviceBudget(m,{names:['CMP Test'],vram:{free:GiB,total:2*GiB}}),/qualification gate/);
+});
+test('An explicitly selected GGUF engine blob does not require renaming',async()=>{
+  const fs=await import('node:fs/promises'),{inspectLocal}=await import('../lib/models.mjs');
+  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'aperture-opaque-'));
+  try {
+    const header=Buffer.alloc(24);header.write('GGUF');header.writeUInt32LE(3,4);
+    const file=path.join(dir,'sha256-synthetic');await fs.writeFile(file,header);
+    const result=await inspectLocal({kind:'local',path:file});assert.equal(result.kind,'gguf');assert.equal(result.source.path,file);
+  }finally{await fs.rm(dir,{recursive:true,force:true});}
+});

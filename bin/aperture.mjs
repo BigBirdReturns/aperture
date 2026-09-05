@@ -66,6 +66,7 @@ remain predictions until the configuration actually runs.`);
       result=await wizard(ui,options);
     }else{
       if(positionals.length!==2)throw new Error('Specify one saved configuration JSON file.');
+      if(['model','context','parallel','cpu','gpu-layers','backend','device','threads'].some(k=>values[k]!==undefined))throw new Error('Execution requirements are preserved in saved configurations. Use setup with those flags to change a requirement.');
       if(command==='chat'&&options.runApproved&&!options.prompt&&options.once)throw new Error('--once requires --prompt.');
       result=await resume(positionals[1],ui,{...options,chat:command==='chat',experiment:command==='experiment'});
     }
