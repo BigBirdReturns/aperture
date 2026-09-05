@@ -15,7 +15,7 @@ A local model inspection reads the path you select. A remote inspection contacts
 | Hardware scan | Read local inventory and selected-path observations. |
 | Reduced support receipt | Run the approved hardware scan and write or print a reduced JSON view. No model access or upload occurs. |
 | Model metadata | Contact the chosen model host for metadata/header information. |
-| Weight acquisition | Download or reuse exact selected files in the managed cache. |
+| Weight acquisition | Download or resume missing exact selected files in the managed cache. A complete managed cache can be reused without this approval. |
 | Native runtime installation | Install the pinned, prebuilt runtime under Aperture's own storage. |
 | Model execution | Consume local computation and memory for your selected configuration. |
 | Experiment | Run two separately approved bounded trials and retain local results. |
