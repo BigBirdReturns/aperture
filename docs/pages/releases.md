@@ -1,6 +1,10 @@
 # Releases and maintenance
 
-Documentation here targets **Aperture 0.4.2**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+Documentation here targets **Aperture 0.4.3**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+
+## 0.4.3: fresh runtime installation
+
+Managed installation commands now receive closed stdin while their output remains visible. This fixes a reproduced Windows first-use stall caused by inheriting the interactive controller input. An empty application home and npm cache completed pinned runtime installation, model acquisition, integrity verification, native assessment and CPU generation at 2048-token context. Existing Windows and Node installations were used; universal clean-machine support is not claimed. See the version-pinned verification record.
 
 ## 0.4.2: native fit before download
 
@@ -28,7 +32,7 @@ The retained native record includes CPU, Intel Vulkan, NVIDIA Vulkan, Linux acqu
 
 The next physical-capacity qualification retains the pinned 14B Q4_K_M checkpoint, RTX 4060, 2,048-token context and one sequence. The 0.4.2 pre-download refusal is established separately; successful inference above physical VRAM capacity remains unverified.
 
-The intended acceptance is an admitted small checkpoint and a correctly explained resource shortfall for the larger target under the constrained conditions, followed by rechecking resources at actual load time. This is a release requirement, not a feature currently promised by the install command.
+The small-checkpoint admission and large-checkpoint refusal are verified separately. A successful fixed 14B partial-GPU generation remains an open acceptance test.
 
 ## Updating and rolling back
 

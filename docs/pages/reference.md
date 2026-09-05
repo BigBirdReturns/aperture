@@ -1,9 +1,9 @@
 # Command reference
 
-These commands describe **Aperture 0.4.2**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
+These commands describe **Aperture 0.4.3**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture --help
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture --help
 ```
 
 Use `npx.cmd` on Windows PowerShell. The reference is checked against the released command's option names; unsupported commands are not inferred from related projects.

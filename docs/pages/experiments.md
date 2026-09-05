@@ -7,10 +7,10 @@ An experiment is an optional operation on a saved configuration. It does not enr
 Start from a trusted answer file created on this machine. The command below runs the published package, so a separate global installation is unnecessary.
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.2/bigbirdreturns-aperture-0.4.2.tgz aperture experiment answer.json
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.3/bigbirdreturns-aperture-0.4.3.tgz aperture experiment answer.json
 ```
 
-On Linux/macOS replace `npx.cmd` with `npx`. The controller asks for explicit experiment approval and any other permissions still required. Release 0.4.2 runs two bounded generations preserving the requested model and context, with fresh integrity and fit checks for each trial. A later refusal retains earlier results. It does not implement an automatic parameter sweep or change the model on your behalf.
+On Linux/macOS replace `npx.cmd` with `npx`. The controller asks for explicit experiment approval and any other permissions still required. Release 0.4.3 runs two bounded generations preserving the requested model and context, with fresh integrity and fit checks for each trial. A later refusal retains earlier results. It does not implement an automatic parameter sweep or change the model on your behalf.
 
 ## Read the result in context
 
@@ -28,4 +28,4 @@ Do not force a fit by closing somebody else's service, consuming unapproved reso
 
 ## Keep results private until reviewed
 
-Run files can contain prompts, output, paths, and device identifiers. Nothing is uploaded automatically. Release 0.4.2 has no automatic redaction/export command. Review and minimize a result before sharing it through an issue. See [privacy and local data](privacy.md) and [verified support](support.md).
+Run files can contain prompts, output, paths, and device identifiers. Nothing is uploaded automatically. Release 0.4.3 has no automatic redaction/export command. Review and minimize a result before sharing it through an issue. See [privacy and local data](privacy.md) and [verified support](support.md).
