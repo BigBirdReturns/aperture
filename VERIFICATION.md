@@ -1,4 +1,4 @@
-# Aperture 0.4.1 verification
+# Aperture 0.4.2 verification
 
 Observed September 4, 2026 Pacific / September 5 UTC. Native execution is separate from control tests and package installation. Full local records contain machine identifiers and paths and were not published.
 
@@ -29,7 +29,7 @@ Windows GPU workers initially stalled during runtime import when inheriting the 
 
 ## Repeatable checks
 
-`npm test` exercises 108 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
+`npm test` exercises 133 source/control cases. `node scripts/package-smoke.mjs` builds a package, installs it in an isolated npm cache and checks its actual version. The GitHub workflow runs those checks on Node 22 and 24 across Ubuntu, Windows and macOS. Consult the workflow at the release commit for its result; a green control job does not establish native inference on that hosted platform.
 
 ## CUDA discovery correction, 0.4.1
 
@@ -46,3 +46,13 @@ The ordinary setup path assessed and then generated `42` with the original Qwen2
 The pinned Qwen2.5-14B Q4_K_M three-shard target at revision `b466e1f8c07172155743e8e1307507d8a4f91fbd` went through ordinary setup with an explicit RTX 4060 Vulkan request, context 2048 and one sequence. The native estimator accounted for 8,982,142,976 tensor bytes and assessed all 50 layer counts. None fit the then-current reserved budgets. The CLI exited 2 with MODEL_DOES_NOT_FIT before the weight-download prompt or acquisition. No full 14B checkpoint was downloaded and no 14B inference occurred. This proves the ordering/refusal behavior for the measured conditions, not beyond-physical-VRAM generation.
 
 The estimator reads bounded, private temporary prefixes through Aperture's existing transport protections. The pinned runtime parses complete tensor tables from those local snapshots; it does not fetch remote weights itself. Prefix snapshots and transient jobs are removed afterward. Native estimates, full checkpoint hash verification, and actual model/context loading remain separate stages. NPU numerical execution, distributed inference, arbitrary GGUF support and universal clean-machine qualification remain outside this change.
+
+## Integrated release acceptance, 0.4.2 (September 5, 2026)
+
+The merged fit-before-download implementation was independently exercised from a fresh Windows x64 checkout. Its initial CLI trace showed that final admission still preceded complete hashing. The nearest repair shares a final-admission helper between generation and chat: verify every local file, then refresh native fit, then pin the returned placement for loading. Each experiment trial repeats this sequence from the original request. A later pre-load refusal retains earlier results in the run summary.
+
+On this successor, the exact 491,400,032-byte Qwen2.5-0.5B Q4_K_M checkpoint above completed ordinary setup and generation on CPU (zero GPU layers) and RTX 4060 CUDA (25 GPU layers). Both preserved context 2048 and one sequence and returned `42` to the arithmetic prompt. Recorded integrity timestamps precede their native assessment timestamps. The ordinary CPU chat returned `ORCHID47` on both turns and exited 0 at the same context. The existing pinned native runtime and local checkpoint were reused; this is not a fresh-machine runtime installation test. An earlier exploratory short instruction produced truncated nonempty text, not task-qualified output; no general quality or speed claim follows from the selected smoke prompts.
+
+The final ordinary remote-model setup assessed the pinned three-shard Qwen2.5-14B Q4_K_M checkpoint on RTX 4060 Vulkan. All 50 layer configurations failed the then-current budgets. Tensor payload was 8,982,142,976 bytes; requested context 2048 and one sequence were unchanged. At 16:33:32 UTC, the displayed nearest candidate used seven GPU layers and required 7,671,871,488 RAM bytes and 2,057,920,512 GPU bytes against budgets of 3,703,444,684 and 1,080,452,711 bytes. Setup exited 2 with `MODEL_DOES_NOT_FIT` before the acquisition prompt; no full 14B weights were acquired and no 14B generation occurred.
+
+All 133 Windows source/control tests passed, including eight added final-admission tests. The controls cover integrity-before-assessment, corrupt/missing checkpoints, consent, independent repeat assessment, and preservation of a first trial when the second is refused. Documentation checks passed across 12 HTML pages and 377 local links. Hosted and public-package installation results belong to the release's workflow and attached verification assets; private paths, prompts beyond these public smoke cases, UUIDs and model weights are not published.

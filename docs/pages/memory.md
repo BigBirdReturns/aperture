@@ -18,7 +18,7 @@ A result with **zero GPU layers is CPU execution**, even when the CUDA or Vulkan
 
 ## The current assessment sequence
 
-The scanner observes the machine and the planner prints a provisional explanation before weight download. **In 0.4.1, definitive native device-fit assessment and loaded-context checks occur on the execution path after remote acquisition.** The pre-download native assessment repair is not released yet.
+The scanner prints a provisional explanation. **In 0.4.2, the native GGUF assessment runs before the weight-download prompt.** It reads at most 8 MiB per selected shard and 64 MiB total, then evaluates fixed-context layer placements against reserved budgets. A non-fitting or unavailable result stops acquisition. After acquisition and complete integrity hashing, each generation, chat launch and experiment trial receives a fresh assessment before loading. Actual loading retains native safety checks and verifies the assessed placement.
 
 This means an early candidate answer is not a guarantee that a large download will lead to a successful launch. Existing services can consume RAM or VRAM between inspection and loading. Loading still needs a current resource check even after a future pre-download check is added.
 
@@ -36,7 +36,7 @@ The published record includes Qwen2.5-3B Q4_K_M on an RTX 4060 with four GPU lay
 
 A successful model execution beyond that card's physical memory capacity remains unverified. A separate 14B assessment returned no admissible configuration under constrained budgets; that observation was not a generation test or an exhaustive proof that other placements cannot work. No throughput or model-quality conclusion follows from it.
 
-The [verification source](https://github.com/BigBirdReturns/aperture/blob/v0.4.1/VERIFICATION.md) separates native observations from control tests. This distinction should remain intact in screenshots, tutorials, and benchmark reports.
+The [verification source](https://github.com/BigBirdReturns/aperture/blob/v0.4.2/VERIFICATION.md) separates native observations from control tests. This distinction should remain intact in screenshots, tutorials, and benchmark reports.
 
 ## When the budget is insufficient
 

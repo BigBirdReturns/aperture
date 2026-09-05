@@ -1,6 +1,6 @@
 # Supported paths and verified results
 
-This page describes the **0.4.1 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
+This page describes the **0.4.2 release** and its retained observations. It separates implemented adapters, actual native execution, and unverified combinations. The complete checkpoint and context remain part of each result; an installed CLI or passing control suite does not qualify every device or architecture.
 
 ## Platform and runtime coverage
 
@@ -39,8 +39,12 @@ A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failur
 
 ## Evidence and reproducibility
 
-The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.1/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
+The [version-pinned verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.2/VERIFICATION.md) names native observations, artifacts, retained failures, and the distinction between free and physical VRAM. Full private machine/run files are not included in the public repository.
 
 The release contains **108 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks package installation. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, and browser-interaction checks.
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
+
+## Admission and regression checks in 0.4.2
+
+The ordinary Windows runner returned `42` with the fixed 0.5B Q4_K_M checkpoint on CPU and RTX 4060 CUDA, preserving 2,048 context and reading back zero and 25 GPU layers respectively. A CPU chat retained a public badge code across two turns and exited cleanly. Integrity hashing preceded final native assessment. The pinned 14B target checked 50 placements and refused before acquisition under the observed constrained budgets. This remains a refusal, not beyond-physical-memory inference. See the version-pinned verification record for exact boundaries.
