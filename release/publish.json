@@ -1,0 +1,10 @@
+{
+  "version": "0.4.5",
+  "title": "Aperture 0.4.5: reduced hardware support receipts",
+  "notes": "release/0.4.5.md",
+  "packageSourceCommit": "4dc4def93b1a8a33fb57a4960d873e770c24455d",
+  "expectedPackageSHA256": "1b539bbfb6eeb315a9cbc341baf0d2978546106da3efce9ef1afd1ca43bae13e",
+  "expectedPackageBytes": 72691,
+  "reviewedAt": "2026-09-05",
+  "releaseIntent": "Publish the permissioned support-receipt path without changing the retained 0.4.4 numerical qualification."
+}
