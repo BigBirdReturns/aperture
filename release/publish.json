@@ -1,10 +1,10 @@
 {
-  "version": "0.4.6",
-  "title": "Aperture 0.4.6: verified managed-GGUF cache reuse",
-  "notes": "release/0.4.6.md",
-  "packageSourceCommit": "cfbc8222f932e43a6d4397cbc2ce4f1cb8131d97",
-  "expectedPackageSHA256": "e19df7c51b6111215cbb1ca26562e405cf2c053dada49c1e340cbe8fe6670196",
-  "expectedPackageBytes": 73541,
-  "reviewedAt": "2026-09-05",
-  "releaseIntent": "Publish exact managed-GGUF return use without broadening weight-transfer permission, safetensors reuse, or execution authority."
+  "version": "0.4.7",
+  "title": "Aperture 0.4.7: source-pinned Recipe Lab",
+  "notes": "release/0.4.7.md",
+  "packageSourceCommit": "86e0bfbe4defeff06b521fa0508c1a2c58466713",
+  "expectedPackageSHA256": "4e614815b7ce0453081b493d800bd1d5aa2f2e4e6f68f5c3886376ea88723ee7",
+  "expectedPackageBytes": 80905,
+  "reviewedAt": "2026-09-06",
+  "releaseIntent": "Publish source-pinned recipe compatibility reasoning without vendoring upstream executable material, fabricating hardware floors, or widening model execution authority."
 }
