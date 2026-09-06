@@ -3,6 +3,7 @@ import {parseArgs} from 'node:util';
 import {terminalUI} from '../lib/ui.mjs';
 import {wizard,resume,listSaved} from '../lib/wizard.mjs';
 import {supportReceipt} from '../lib/support.mjs';
+import {recipeReport} from '../lib/recipes.mjs';
 import {positive,clean,localPath} from '../lib/common.mjs';
 import {VERSION} from '../lib/version.mjs';
 let ui;
@@ -18,6 +19,7 @@ try{
   aperture setup                   Same guided setup
   aperture list                    Your saved configurations
   aperture support                 Create a reduced hardware receipt for support
+  aperture recipes                 Match source-pinned inference recipes to this hardware
   aperture chat ANSWER.json         Resume a local chat; /new and /exit supported
   aperture run ANSWER.json          Generate one answer and record the run
   aperture experiment ANSWER.json   Two opt-in bounded trials
@@ -33,7 +35,7 @@ try{
   --home DIRECTORY                 Runtime/model/answer storage destination
   --gpu-layers N                   Pin a layer count for supported GGUF execution
   --answer-only                    Print configuration without installing/running
-  --out FILE                       Save configuration or support receipt to a new JSON file
+  --out FILE                       Save configuration, support receipt, or recipe report to new JSON
   --prompt TEXT                    Prompt for run/chat; --once exits chat after it
   --tokens N                       Generated token limit (run 128; chat 1024)
   --seconds N                      Single-run timeout (default 600)
@@ -51,6 +53,11 @@ adapter names, model locations, prompts, output, credentials and environment
 variables. Hardware models, drivers and exact capacities can still fingerprint
 a machine, so inspect the JSON before sharing it.
 
+The recipes command accepts --allow-scan, --home and --out only. It uses the
+local hardware inventory against source-pinned factual recipe records. It does
+not access model files, download checkpoints, install runtimes, or run models.
+A reference machine is never silently treated as a proven minimum.
+
 No scan or model access occurs with --help or --version. No initial runtime
 installation, lifecycle scripts, telemetry, account or API key is required.
 Model architecture support comes from the selected runtime; fit and speed
@@ -58,7 +65,7 @@ remain predictions until the configuration actually runs.`);
   else if(values.version)console.log(VERSION);
   else{
     const command=positionals[0]||'setup';
-    if(!['setup','list','support','run','chat','experiment'].includes(command))throw new Error('Unknown command. Use aperture --help.');
+    if(!['setup','list','support','recipes','run','chat','experiment'].includes(command))throw new Error('Unknown command. Use aperture --help.');
     const options={model:values.model,context:values.context?positive(values.context,'Context'):4096,contextExplicit:!!values.context,
       parallel:values.parallel?positive(values.parallel,'Sessions',1024):1,cpu:!!values.cpu,gpuLayers:values['gpu-layers']!==undefined?Number(values['gpu-layers']):null,
       scanApproved:!!values['allow-scan'],networkApproved:!!values['allow-network'],downloadApproved:!!values['allow-download'],installApproved:!!values['allow-install'],runApproved:!!values['allow-run'],
@@ -68,11 +75,11 @@ remain predictions until the configuration actually runs.`);
     if(values.threads)options.threads=positive(values.threads,'Threads',1024);
     if(values.home)process.env.APERTURE_HOME=localPath(values.home);
     ui=terminalUI();let result;
-    if(command==='support'){
-      if(positionals.length!==1)throw new Error('The support command does not accept a model or configuration path.');
+    if(command==='support'||command==='recipes'){
+      if(positionals.length!==1)throw new Error(`The ${command} command does not accept a model or configuration path.`);
       const disallowed=['model','context','parallel','cpu','gpu-layers','backend','device','threads','allow-network','answer-only','allow-download','allow-install','allow-run','prompt','tokens','seconds','once'].filter(key=>values[key]!==undefined);
-      if(disallowed.length)throw new Error('The support command accepts only --allow-scan, --home and --out.');
-      result=await supportReceipt(ui,options);
+      if(disallowed.length)throw new Error(`The ${command} command accepts only --allow-scan, --home and --out.`);
+      result=command==='support'?await supportReceipt(ui,options):await recipeReport(ui,options);
     }else if(command==='list')await listSaved(ui);
     else if(command==='setup'){
       if(positionals.length>1)throw new Error('Supply the model with --model.');
