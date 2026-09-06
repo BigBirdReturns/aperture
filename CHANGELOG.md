@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.7
+
+Add `aperture recipes`, a permissioned local hardware-to-recipe resolver. The first catalog is pinned to `local-inference-lab/rtx6kpro` commit `3023e7c2e572cd445cd62234607aaf765121da58` and records selected factual experiment conditions without vendoring upstream prose or executable material. Results are classified as `QUALIFIED`, `CANDIDATE`, `UNKNOWN`, or `BLOCKED`, with reference hardware, approximate working-set observations, hard numerical requirements, current headroom, and unresolved canaries kept distinct.
+
+NVIDIA scanning now attempts an additive compute-capability and current PCIe generation/width observation. Failure of that optional detail probe does not erase the existing capacity inventory. The recipe command has scan-only authority and cannot read model files, contact a model host, download weights, install a runtime, or execute inference.
+
 ## 0.4.6
 
 A complete GGUF already present in Aperture's managed cache is now bound locally before remote native-fit metadata or weight-acquisition permission is requested. The cache key preserves the selected source, revision, representation, component sizes, and expected hashes; complete integrity hashing still repeats before loading. Incomplete transfers retain the existing explicit permission and resumable-acquisition path. Safetensors reuse remains on the existing full verification and acquisition path.
@@ -10,7 +16,7 @@ The CLI help, command reference, and privacy ledger distinguish reuse of a compl
 
 Add a permissioned `aperture support` command that scans the same CPU, RAM, integrated and discrete graphics, NPU, storage, link, and runtime inventory used by planning, then emits a reduced JSON receipt for external support. The receipt excludes host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names and serials, network adapter names and addresses, model locations, prompts, output, credentials, and environment variables. Provider failures are reduced to bounded classes, and identifier-shaped labels are withheld. It retains hardware classes, drivers, capacities, current headroom, scan status, and explicit unmeasured fields. The file is not anonymous and must be reviewed before sharing.
 
-The installed-package smoke path executes the support command across the hosted Windows, Linux, and macOS matrix and rejects forbidden identifier fields, the runner host name, home directory, and temporary paths. A guarded release workflow builds the package twice on the release branch and again before publication, verifies a reviewed package hash and byte count, refuses an existing tag or release, and dispatches post-publication documentation verification.
+The installed-package smoke path executes the support command across the hosted Windows, Linux, and macOS control matrix and rejects forbidden identifier fields, the runner host name, home directory, and temporary paths. A guarded release workflow builds the package twice on the release branch and again before publication, verifies a reviewed package hash and byte count, refuses an existing tag or release, and dispatches post-publication documentation verification.
 
 ## 0.4.4
 

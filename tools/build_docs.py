@@ -12,6 +12,7 @@ PAGES = [
     ("quickstart", "Get started", "Installation, permissions, the first session, and returning later."),
     ("models", "Model sources", "Local files, repository links, numbered shards, and access."),
     ("memory", "Memory and placement", "Physical capacity, available headroom, and CPU/GPU split execution."),
+    ("recipes", "Recipe Lab", "Match source-pinned inference experiments to the hardware Aperture actually observes."),
     ("reference", "Command reference", "Every released command, flag, and independent permission."),
     ("troubleshooting", "Troubleshooting", "Recover from installation, download, backend, and model errors."),
     ("privacy", "Privacy and local data", "What is read, retained, transmitted, and kept under your control."),

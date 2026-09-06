@@ -1,9 +1,9 @@
 # Command reference
 
-These commands describe **Aperture 0.4.6**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
+These commands describe **Aperture 0.4.7**. `aperture` below is the executable name. When it is not installed globally, place the command after this version-pinned package prefix:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture --help
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz aperture --help
 ```
 
 Use `npx.cmd` on Windows PowerShell. The reference is checked against the released command's option names; unsupported commands are not inferred from related projects.
@@ -15,13 +15,14 @@ Use `npx.cmd` on Windows PowerShell. The reference is checked against the releas
 | `aperture` or `aperture setup` | Permissioned hardware scan, model selection, explanation, optional use. |
 | `aperture list` | List locally saved configurations. |
 | `aperture support` | Create a reduced hardware receipt for a reviewed support report. |
+| `aperture recipes` | Compare the approved local hardware inventory with source-pinned inference recipes. |
 | `aperture chat ANSWER.json` | Resume a GGUF chat; `/new` clears and `/exit` closes. |
 | `aperture run ANSWER.json` | Generate one answer and save the run record. |
 | `aperture experiment ANSWER.json` | Offer two explicitly approved bounded trials. |
 | `aperture --help` | Show commands and flags without scan or model access. |
 | `aperture --version` | Print the installed version without scan or model access. |
 
-There is no `serve`, automatic harness-connection, NPU inference, or distributed-run command in this release. The existing terminal chat is the working user interface.
+There is no `serve`, automatic harness-connection, NPU inference, or distributed-run command in this release. Recipe matching can describe multi-GPU source configurations, but it does not execute distributed inference. The existing terminal chat is the working user interface.
 
 ## Model and execution requirements
 
@@ -35,7 +36,7 @@ There is no `serve`, automatic harness-connection, NPU inference, or distributed
 | `--device INDEX_OR_NAME` | One device in the selected native backend; ambiguous matches fail. |
 | `--gpu-layers N` | Explicit GPU-layer count for compatible GGUF execution. |
 | `--threads N` | CPU worker threads. |
-| `--home DIRECTORY` | Managed runtime, model, answer, and run storage root. For `support`, it selects the filesystem whose available capacity is reported, without disclosing the path. |
+| `--home DIRECTORY` | Managed runtime, model, answer, and run storage root. For `support` and `recipes`, it selects the filesystem observation context without disclosing the path in the reduced/result surface. |
 
 Use model and execution flags during **setup**. Resumed execution refuses flags that would change model, context, parallelism, backend, device, GPU layers, or thread count. Create a new setup instead. Resource changes after setup still affect whether the saved request can run.
 
@@ -44,7 +45,7 @@ Use model and execution flags during **setup**. Resumed execution refuses flags 
 | Flag | Meaning |
 | --- | --- |
 | `--answer-only` | Print the provisional setup answer without installing a runtime or running inference. |
-| `--out FILE` | Save a setup answer or support receipt to a new JSON file; existing files are not overwritten. |
+| `--out FILE` | Save a setup answer, support receipt, or recipe report to a new JSON file; existing files are not overwritten. |
 | `--prompt TEXT` | Supply a prompt. During setup, selects one-answer mode; permissions still apply. |
 | `--once` | Exit chat after the supplied `--prompt`; does not make arbitrary operations unattended. |
 | `--tokens N` | Generated-token limit; default 128 for a run and 1,024 for chat. |
@@ -56,7 +57,7 @@ Use model and execution flags during **setup**. Resumed execution refuses flags 
 
 | Flag | Explicitly approves |
 | --- | --- |
-| `--allow-scan` | Hardware and selected-path observations. For `support`, this is the only operation permission. |
+| `--allow-scan` | Hardware and selected-path observations. For `support` and `recipes`, this is the only operation permission. |
 | `--allow-network` | Bounded model metadata requests. |
 | `--allow-download` | Downloading or resuming missing bytes for the exact selected weights. A complete managed cache is reused without this permission. |
 | `--allow-install` | Installation of the isolated, pinned native runtime. |
@@ -66,7 +67,9 @@ Omitting a flag leaves its operation subject to interactive approval. Experiment
 
 A saved remote GGUF can bind to its exact complete Aperture-managed cache before model-host or transfer approval. The cache key retains source, revision, representation, component names, sizes, and expected hashes. Every selected component is still completely hashed before final native fit and load. Missing, changed, symbolic, differently identified, or unsupported cache entries do not receive this shortcut. Safetensors remain on the ordinary verified acquisition path.
 
-The `support` command accepts only `--allow-scan`, `--home`, and `--out`. It rejects model, context, backend, network, download, installation, execution, and prompt flags rather than implying that those operations contribute to the receipt.
+The `support` and `recipes` commands accept only `--allow-scan`, `--home`, and `--out`. They reject model, context, backend, network, download, installation, execution, and prompt flags rather than implying that those operations contribute to their result.
+
+`aperture recipes` uses the approved local scan against source-pinned factual recipe records. Its four states are `QUALIFIED`, `CANDIDATE`, `UNKNOWN`, and `BLOCKED`. It does not read model files, contact model hosts, download a checkpoint, install a runtime, or run inference. Reference hardware and approximate working-set observations remain reference evidence unless a hard lower boundary is separately established. See [Recipe Lab](recipes.md).
 
 ## Examples
 
@@ -76,6 +79,12 @@ The paths below are placeholders to replace with your own files. These examples 
 
 ```sh
 aperture setup --allow-scan --model "/models/chosen.gguf" --context 8192 --answer-only --out answer.json
+```
+
+**Compare this machine with source-pinned inference recipes**
+
+```sh
+aperture recipes --allow-scan --out aperture-recipes.json
 ```
 
 **Create a reduced hardware support receipt**
@@ -113,6 +122,10 @@ aperture run "answer.json" --prompt "Explain a hash table." --tokens 96 --second
 The `aperture-support/1` receipt omits host and user names, local paths and mount labels, stable device and partition identifiers, GPU UUIDs, drive product names and serials, network adapter names and addresses, model locations, prompts, generated text, credentials, and environment variables. Dynamic provider failures are reduced to bounded error classes, and identifier-shaped hardware labels are withheld.
 
 The receipt remains fingerprintable through its retained hardware models, exact capacities, driver versions, and timestamp. It is intended to reduce unnecessary disclosure in a reviewed support report, not to provide anonymity.
+
+## Recipe report boundary
+
+The `aperture-recipe-report/1` result retains the source catalog commit, selected recipe identities, compatibility reasoning, hardware models, capacities, compute capability when observed, current PCIe link shape when observed, and the next canary. It omits model contents because none are opened. It does not claim source benchmark reproduction, model quality, or successful load. GPU peer-to-peer bandwidth and NUMA locality remain explicitly unmeasured.
 
 ## Exit behavior
 

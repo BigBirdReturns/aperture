@@ -1,15 +1,17 @@
 {
   "name": "Aperture",
-  "version": "0.4.6",
-  "tag": "v0.4.6",
-  "release_commit": "cfbc8222f932e43a6d4397cbc2ce4f1cb8131d97",
+  "version": "0.4.7",
+  "tag": "v0.4.7",
+  "release_commit": "86e0bfbe4defeff06b521fa0508c1a2c58466713",
   "base_url": "https://bigbirdreturns.github.io/aperture",
   "repository": "https://github.com/BigBirdReturns/aperture",
-  "package_url": "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz",
-  "reviewed": "2026-09-05",
+  "package_url": "https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz",
+  "reviewed": "2026-09-06",
   "native_prefit_before_download": true,
   "redacted_support_receipt": true,
   "managed_cache_reuse_without_transfer_permission": true,
-  "package_sha256": "e19df7c51b6111215cbb1ca26562e405cf2c053dada49c1e340cbe8fe6670196",
-  "package_bytes": 73541
+  "recipe_lab_source_pinned": true,
+  "recipe_lab_first_source": "local-inference-lab/rtx6kpro@3023e7c2e572cd445cd62234607aaf765121da58",
+  "package_sha256": "4e614815b7ce0453081b493d800bd1d5aa2f2e4e6f68f5c3886376ea88723ee7",
+  "package_bytes": 80905
 }

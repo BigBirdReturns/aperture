@@ -1,6 +1,6 @@
 # Supported paths and verified results
 
-This page describes the **0.4.6 release** and its retained observations. It separates implemented adapters, actual native execution, support-intake controls, managed-cache behavior, and unverified combinations. The complete checkpoint and context remain part of each numerical result; an installed CLI or passing control suite does not qualify every device or architecture.
+This page describes the **0.4.7 release** and its retained observations. It separates implemented adapters, actual native execution, source-pinned recipe reasoning, support-intake controls, managed-cache behavior, and unverified combinations. The complete checkpoint and context remain part of each numerical result; an installed CLI or passing control suite does not qualify every device or architecture.
 
 ## Platform and runtime coverage
 
@@ -12,14 +12,27 @@ This page describes the **0.4.6 release** and its retained observations. It sepa
 | Windows Intel UHD 770 Vulkan | Managed GGUF runtime | 25 GPU layers, 2,048 context; nonempty truncated output, not task-quality qualification. |
 | Linux CPU | Managed GGUF runtime | Model-link acquisition, runtime installation, generation, and public GitHub package acquisition exercised. |
 | macOS / Apple Metal | Adapter implemented | Native Mac inference not verified by this project. |
+| Recipe Lab | Local scan plus source-pinned compatibility resolver | Control coverage for source pinning, compute-capability gates, reference-vs-floor semantics, homogeneous multi-GPU matching, current-headroom separation, and no-execution output. No upstream benchmark is claimed reproduced. |
 | Other Intel / AMD / NVIDIA combinations | Dependent on compatible prebuilt runtime and drivers | No blanket hardware-family qualification. |
 | Safetensors via Transformers/Accelerate | Compatibility adapter; existing Python/PyTorch required | No general native safetensors qualification claimed here. Managed-cache shortcut is not applied. |
 | NPU | Inventory and explicit unsupported request | Numerical execution not implemented. |
-| Multiple GPUs or hosts | No full placement/distributed implementation | No pooled-memory claim. |
+| Multiple GPUs or hosts | No full placement/distributed implementation | No pooled-memory claim. Recipe Lab may classify a source multi-GPU shape, but does not execute it. |
 
 The guided runner admits one sequence. Automatic connections to Codex, Claude Code, OpenCode, or other external harnesses are not implemented in this application. Magnitude's feature list does not transfer to Aperture.
 
-## Exact managed-GGUF return use in 0.4.6
+## Source-pinned Recipe Lab in 0.4.7
+
+`aperture recipes --allow-scan` compares the local hardware inventory with structured factual records. The first source is `local-inference-lab/rtx6kpro` at commit `3023e7c2e572cd445cd62234607aaf765121da58`. The catalog does not vendor or execute upstream prose, scripts, images, Dockerfiles, or other executable material.
+
+The first seven records cover Qwen3.8-27B official FP8 TP1 and qualified TP4 profiles, Qwen3.5-397B-A17B NVFP4 TP4, Qwen3.5-122B-A10B NVFP4 TP2, MiniMax-M2.5 NVFP4 TP2, GLM-5 NVFP4 TP2+PP3, and Kimi K2.5 native INT4 TP8.
+
+The result states are `QUALIFIED`, `CANDIDATE`, `UNKNOWN`, and `BLOCKED`. Known hard numerical requirements, such as the SM120-class path required for the cataloged native NVFP4 observations, can reject older observed compute capability. A source GPU model or nominal memory class is reference evidence, not an automatic minimum. Approximate working-set values also remain reference evidence. If smaller hardware is not disproven by a hard boundary, Aperture returns `UNKNOWN` and names the next fit/load canary instead of fabricating either compatibility or incompatibility.
+
+Current free VRAM is separate from physical capability. A physically matching machine may remain a recipe candidate while its current available headroom is below the source observation. Multi-GPU recipes preserve homogeneous source-cohort assumptions. The NVIDIA scan attempts compute capability and current PCIe generation/width when the installed driver exposes them; failure of that optional detail query does not erase existing capacity observations. GPU peer-to-peer bandwidth and NUMA locality remain unmeasured.
+
+The command performs no model access, network model metadata request, checkpoint download, runtime installation, inference, benchmark, stress test, or automatic upload. `QUALIFIED` preserves the source evidence class when the observed local hard/reference conditions match; it does not mean the source throughput or quality result was reproduced locally.
+
+## Exact managed-GGUF return use retained from 0.4.6
 
 When a saved remote GGUF is already complete under the exact Aperture-managed acquisition key, the runner can bind it locally before model-host metadata or weight-transfer approval. The key preserves source, pinned revision, representation, component names, declared sizes, and expected hashes. The admitted entries must be regular files, and complete component hashing plus refreshed native fit still precede loading.
 
@@ -49,7 +62,9 @@ The integrated path produced `42` and retained `CEDAR83` across two chat turns o
 
 ## Current limitations that affect a first run
 
-Native GGUF fit assessment precedes the complete weight-download prompt. The lightweight `--answer-only` result remains provisional. Release 0.4.4 records one checkpoint larger than the selected accelerator's physical memory completing through a CPU/GPU split, and 0.4.6 retains that numerical path unchanged. That result does not generalize to arbitrary architectures or checkpoints. Automatic fitting may select zero GPU layers; that remains CPU execution.
+Native GGUF fit assessment precedes the complete weight-download prompt. The lightweight `--answer-only` result remains provisional. Release 0.4.4 records one checkpoint larger than the selected accelerator's physical memory completing through a CPU/GPU split, and 0.4.7 retains that numerical path unchanged. That result does not generalize to arbitrary architectures or checkpoints. Automatic fitting may select zero GPU layers; that remains CPU execution.
+
+Recipe compatibility does not add vLLM/SGLang distributed execution. A catalog record can identify an applicable source shape, but actual multi-GPU serving, topology qualification, runtime installation, and throughput reproduction remain separate work.
 
 A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failure. Missing adapters, unknown topology, and incomplete runs remain visible. NPU execution, remote-range numerical streaming, general quantized-safetensors support, parallel guided sessions, and distributed execution are outside the demonstrated release.
 
@@ -57,7 +72,7 @@ A legacy Qwen3.5 GGUF RoPE-layout mismatch is retained as a compatibility failur
 
 The historical [verification record](https://github.com/BigBirdReturns/aperture/blob/v0.4.6/VERIFICATION.md) retains the earlier native observations, artifacts, failures, and the distinction between free and physical VRAM. The 0.4.6 return-use claim is additionally bound by the path-free cache-reuse receipt above and the versioned release notes. Full private machine/run files are not included in the public repository.
 
-The release contains **169 source/control tests**. Its Node 22/24 by Ubuntu/Windows/macOS workflow also checks clean package installation and the installed support-receipt command. Those checks are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, browser-interaction, package-identity, and public-install checks.
+The retained 0.4.6 control receipt records **169 source/control tests** for that release. Aperture 0.4.7 passed its expanded source/control suite, the hosted Node 22/24 Ubuntu/Windows/macOS matrix, installed-package smoke, and the guarded two-build release candidate. Those controls are separate from native inference on a particular host. Public documentation has its own link, command-consistency, responsive-layout, browser-interaction, package-identity, and public-install checks.
 
 [Read the release notes](releases.md), [check the workflows](https://github.com/BigBirdReturns/aperture/actions), or [report your model combination](https://github.com/BigBirdReturns/aperture/issues/new?template=model-support.yml).
 
