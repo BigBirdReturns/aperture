@@ -1,6 +1,6 @@
 # Get started
 
-Aperture is a terminal application. It inspects your hardware with permission, reads the model you choose, explains a provisional configuration, and can start a local session. This website does not scan your computer or run a model.
+Aperture is a terminal application. It inspects your hardware with permission, reads the model you choose, explains a provisional configuration, and can start a local session. It can also compare the observed machine with source-pinned inference recipes. This website does not scan your computer or run a model.
 
 ## Install and open
 
@@ -9,13 +9,13 @@ Install a current [Node.js LTS release](https://nodejs.org/en/download) first. A
 **Windows PowerShell**
 
 ```powershell
-npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture
+npx.cmd --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz aperture
 ```
 
 **Linux or macOS terminal**
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz aperture
 ```
 
 Windows and Linux have recorded native runs. The macOS adapter is implemented, but native Mac inference has not been verified by this project. Check the [support matrix](support.md) before selecting a platform or model.
@@ -23,14 +23,14 @@ Windows and Linux have recorded native runs. The macOS adapter is implemented, b
 With Git installed, the shorter, version-pinned equivalent is:
 
 ```sh
-npx --yes github:BigBirdReturns/aperture#v0.4.6
+npx --yes github:BigBirdReturns/aperture#v0.4.7
 ```
 
 Use `npx.cmd` instead of `npx` in Windows PowerShell. The package is distributed through GitHub, **not the npm registry**. Do not use `npx @bigbirdreturns/aperture` for this release.
 
 ## Approve the hardware scan
 
-The first question asks permission to inspect CPU, graphics devices, neural accelerator candidates, RAM and allocation headroom, storage, available link observations, and runtime locations. It does not search your personal folders, load a model, or enroll the machine in experiments.
+The first question asks permission to inspect CPU, graphics devices, neural accelerator candidates, RAM and allocation headroom, storage, available link observations, and runtime locations. NVIDIA inventory also attempts a bounded compute-capability and current PCIe generation/width read when the installed driver exposes those fields. It does not search your personal folders, load a model, or enroll the machine in experiments.
 
 The initial CLI has no dependencies or install scripts. Installing its optional native inference runtime is a later, separate operation. You can decline the scan and exit.
 
@@ -50,7 +50,17 @@ This example is approximately 491 MB. It is a setup smoke test, not a recommenda
 
 The answer identifies your selected artifact, hardware observations, context, session count, candidate backend, memory budgets, and any known missing adapter. Context defaults to 4,096 tokens and the guided runner supports one sequence. Explicit requirements are retained.
 
-> **Native assessment retained in 0.4.6:** before asking to download remote GGUF weights, Aperture checks bounded model prefixes using the pinned runtime. A failed assessment stops acquisition without changing your model or context. Full integrity hashing is followed by a fresh assessment before loading. Runtime installation, metadata access, downloads and execution retain separate permissions. `--answer-only` remains provisional. [How memory is assessed](memory.md).
+> **Native assessment retained:** before asking to download remote GGUF weights, Aperture checks bounded model prefixes using the pinned runtime. A failed assessment stops acquisition without changing your model or context. Full integrity hashing is followed by a fresh assessment before loading. Runtime installation, metadata access, downloads and execution retain separate permissions. `--answer-only` remains provisional. [How memory is assessed](memory.md).
+
+## Match experiment knowledge to this machine
+
+Recipe matching is independent of model setup. It performs only the approved local hardware scan:
+
+```sh
+aperture recipes --allow-scan
+```
+
+The first catalog is pinned to one exact `local-inference-lab/rtx6kpro` commit. Aperture classifies each structured recipe as `QUALIFIED`, `CANDIDATE`, `UNKNOWN`, or `BLOCKED`. A reference RTX PRO 6000 configuration is evidence about the source experiment, not an automatic minimum for your machine. Smaller or different hardware remains unknown unless a hard numerical or capacity boundary is actually established. The command does not read a checkpoint, contact a model host, download weights, install a runtime, or run a benchmark. See [Recipe Lab](recipes.md).
 
 ## Start useful work
 
@@ -63,16 +73,16 @@ In a GGUF chat, `/new` clears the current conversation and `/exit` releases the 
 Aperture prints the path of the saved answer. Use the same package prefix on a later terminal invocation:
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture list
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz aperture list
 ```
 
 ```sh
-npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.6/bigbirdreturns-aperture-0.4.6.tgz aperture chat "/path/to/answer.json"
+npx --yes --package=https://github.com/BigBirdReturns/aperture/releases/download/v0.4.7/bigbirdreturns-aperture-0.4.7.tgz aperture chat "/path/to/answer.json"
 ```
 
 Replace the quoted path with the path Aperture printed. Resume only answer files you trust. To change the model, context, device, or layer count, use a new `setup` command rather than editing a saved answer to imply a previously verified configuration.
 
-For a saved remote GGUF, Aperture 0.4.6 first checks whether the exact selected artifact is already complete in its managed cache. A complete matching cache can be reused without model-host or weight-transfer approval. Aperture still verifies every selected file and repeats native fit before loading. Missing bytes require download approval, and runtime installation and execution retain their separate approvals. Safetensors do not use this shortcut.
+For a saved remote GGUF, Aperture first checks whether the exact selected artifact is already complete in its managed cache. A complete matching cache can be reused without model-host or weight-transfer approval. Aperture still verifies every selected file and repeats native fit before loading. Missing bytes require download approval, and runtime installation and execution retain their separate approvals. Safetensors do not use this shortcut.
 
 ## Create a support receipt
 
