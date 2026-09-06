@@ -1,10 +1,24 @@
 # Releases and maintenance
 
-Documentation here targets **Aperture 0.4.6**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+Documentation here targets **Aperture 0.4.7**. The runtime package is versioned separately from documentation-only changes. Updating this website does not retroactively turn a development probe into released functionality.
+
+## 0.4.7: source-pinned Recipe Lab
+
+`aperture recipes` compares the approved local hardware inventory with a source-pinned catalog of inference experiments. The first source is `local-inference-lab/rtx6kpro` at exact commit `3023e7c2e572cd445cd62234607aaf765121da58`. Aperture records selected factual conditions and exact source coordinates without redistributing or executing the upstream project's prose, scripts, Dockerfiles, images, or other executable material.
+
+The first seven records cover Qwen3.8-27B official FP8 TP1 and qualified TP4 profiles, Qwen3.5-397B-A17B NVFP4 TP4, Qwen3.5-122B-A10B NVFP4 TP2, MiniMax-M2.5 NVFP4 TP2, GLM-5 NVFP4 TP2+PP3, and Kimi K2.5 native INT4 TP8.
+
+The resolver returns `QUALIFIED`, `CANDIDATE`, `UNKNOWN`, or `BLOCKED`. Hard requirements and source reference conditions remain different objects. A known SM120-class numerical requirement can reject pre-SM120 hardware. A 96 GB-class reference card does not become an invented minimum, and approximate source working-set values remain reference evidence. Hardware below such a reference remains `UNKNOWN` until exact checkpoint/context fit or another bounded canary establishes a lower boundary.
+
+Current free VRAM is tracked separately from physical capability. Multi-GPU recipes preserve source GPU-count and homogeneous-cohort assumptions. NVIDIA scans now attempt an additive compute-capability and current PCIe generation/width observation when the driver exposes the fields. Peer-to-peer bandwidth and NUMA locality remain unmeasured.
+
+The recipe command accepts only scan, storage-root and output controls. It does not read model files, contact a model host, download weights, install a runtime, execute inference, stop another workload, or run a benchmark. A recipe result is compatibility evidence and a next-canary decision, not reproduction of the upstream result.
+
+The package-bearing source commit is `86e0bfbe4defeff06b521fa0508c1a2c58466713`, tree `bb3944ed4d99f9034d06eddd465fc9c774fd05cc`. Two candidate builds produced the same 80,905-byte archive with SHA-256 `4e614815b7ce0453081b493d800bd1d5aa2f2e4e6f68f5c3886376ea88723ee7`; source/control tests and the installed-package smoke passed.
 
 ## 0.4.6: exact managed-GGUF return use
 
-A saved remote GGUF can now bind to the exact complete artifact already held in Aperture's managed cache before the application requests model-host metadata or weight-transfer approval. The cache key preserves the selected source, revision, representation, component names, declared sizes, and expected hashes. Aperture admits only regular files under the matching managed entry, then completely hashes every selected component and repeats native fit before loading.
+A saved remote GGUF can bind to the exact complete artifact already held in Aperture's managed cache before the application requests model-host metadata or weight-transfer approval. The cache key preserves the selected source, revision, representation, component names, declared sizes, and expected hashes. Aperture admits only regular files under the matching managed entry, then completely hashes every selected component and repeats native fit before loading.
 
 This changes the returning-user lifecycle without weakening the first-use gates. An incomplete cache, identity or size drift, a symbolic entry, or missing bytes remains a cache miss and follows the existing permissioned metadata, fit, and resumable-acquisition path. Safetensors remain on the prior verified acquisition path. Runtime installation and model execution still require their own approvals.
 
