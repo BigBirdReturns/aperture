@@ -27,10 +27,19 @@ test('NVFP4 hard architecture floor blocks pre-SM120 hardware',()=>{
   assert.ok(row.blockers.some(text=>text.includes('compute capability 12')));
 });
 
-test('observed working-set lower bound blocks physically smaller GPUs',()=>{
+test('approximate source working set remains UNKNOWN below the observation instead of becoming a fabricated floor',()=>{
   const row=evaluateRecipe(machine([gpu(0,'NVIDIA RTX 6000 fixture',80),gpu(1,'NVIDIA RTX 6000 fixture',80),gpu(2,'NVIDIA RTX 6000 fixture',80),gpu(3,'NVIDIA RTX 6000 fixture',80)]),recipe('rtx6kpro/qwen35-397b-a17b-nvfp4-tp4'));
+  assert.equal(row.status,'UNKNOWN');
+  assert.equal(row.blockers.length,0);
+  assert.ok(row.unknowns.some(text=>text.includes('approximate observation')));
+});
+
+test('an explicitly established working-set floor can hard-block smaller physical VRAM',()=>{
+  const base=recipe('rtx6kpro/qwen38-27b-official-fp8-vllm-tp1-mtp3');
+  const exact={...base,hard:{...base.hard,perGpuObservedWorkingSetBytes:40*GiB},reference:{...base.reference,perGpuMemoryBytes:null}};
+  const row=evaluateRecipe(machine([gpu(0,'NVIDIA fixture',32,30,12)]),exact);
   assert.equal(row.status,'BLOCKED');
-  assert.ok(row.blockers.some(text=>text.includes('82.0 GiB')));
+  assert.ok(row.blockers.some(text=>text.includes('established working-set floor')));
 });
 
 test('smaller-than-reference memory remains unknown when the source did not establish a floor',()=>{
@@ -40,11 +49,15 @@ test('smaller-than-reference memory remains unknown when the source did not esta
   assert.ok(row.unknowns.some(text=>text.includes('does not establish')));
 });
 
+test('nominal 96 GB class tolerates normal driver-reported capacity below 96 GiB',()=>{
+  const row=evaluateRecipe(machine([0,1,2,3].map(i=>gpu(i,'NVIDIA RTX PRO 6000 Blackwell',95.5,90,12))),recipe('rtx6kpro/qwen38-27b-official-fp8-vllm-tp4-qualified'));
+  assert.equal(row.status,'QUALIFIED');
+});
+
 test('qualified source becomes QUALIFIED only when reference conditions are observed',()=>{
   const row=evaluateRecipe(machine([0,1,2,3].map(i=>gpu(i))),recipe('rtx6kpro/qwen38-27b-official-fp8-vllm-tp4-qualified'));
   assert.equal(row.status,'QUALIFIED');
   assert.equal(row.evidenceStatus,'qualified');
-  assert.equal(row.execution,'NOT_RUN');
 });
 
 test('field observation remains CANDIDATE on matching reference hardware',()=>{
@@ -64,7 +77,7 @@ test('current VRAM pressure is reported separately from physical capability',()=
   const devices=[0,1,2,3].map(i=>gpu(i,'NVIDIA RTX PRO 6000 Blackwell',96,40,12));
   const row=evaluateRecipe(machine(devices),recipe('rtx6kpro/qwen35-397b-a17b-nvfp4-tp4'));
   assert.equal(row.status,'CANDIDATE');
-  assert.equal(row.availability,'INSUFFICIENT_CURRENT_HEADROOM');
+  assert.equal(row.availability,'BELOW_SOURCE_REFERENCE_HEADROOM');
   assert.ok(row.cautions.some(text=>text.includes('currently free')));
 });
 
