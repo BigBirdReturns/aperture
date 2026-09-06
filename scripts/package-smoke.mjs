@@ -26,6 +26,7 @@ try{
   const output=run(['exec','--yes','--package',archive,'--','aperture','--version']).trim();
   const expected=JSON.parse(await fs.readFile(path.join(root,'package.json'),'utf8')).version;
   if(output!==expected)throw new Error('Installed executable version mismatch: '+output);
+
   const supportFile=path.join(tmp,'support.json');
   run(['exec','--yes','--package',archive,'--','aperture','support','--allow-scan','--out',supportFile]);
   const support=JSON.parse(await fs.readFile(supportFile,'utf8'));
@@ -33,7 +34,19 @@ try{
   const forbidden=new Set(['path','observedPath','uuid','id','mount','diskId','location']);
   const present=keys(support).filter(key=>forbidden.has(key));
   if(present.length)throw new Error('Support receipt exposed local identifier keys: '+present.join(', '));
-  const strings=values(support),privateValues=[tmp,os.homedir(),os.hostname()].filter(Boolean);
-  if(strings.some(value=>privateValues.some(secret=>value===secret||value.includes(secret))))throw new Error('Support receipt exposed a local path or host name.');
-  console.log('Clean npm package install, executable version, and redacted support receipt: PASS');
+  const supportStrings=values(support),privateValues=[tmp,os.homedir(),os.hostname()].filter(Boolean);
+  if(supportStrings.some(value=>privateValues.some(secret=>value===secret||value.includes(secret))))throw new Error('Support receipt exposed a local path or host name.');
+
+  const recipeFile=path.join(tmp,'recipes.json');
+  run(['exec','--yes','--package',archive,'--','aperture','recipes','--allow-scan','--out',recipeFile]);
+  const recipes=JSON.parse(await fs.readFile(recipeFile,'utf8'));
+  if(recipes.schema!=='aperture-recipe-report/1'||recipes.apertureVersion!==expected)throw new Error('Installed recipe report identity mismatch.');
+  if(recipes.source?.commit!=='3023e7c2e572cd445cd62234607aaf765121da58')throw new Error('Installed recipe source pin mismatch.');
+  if(recipes.execution!=='NOT_RUN')throw new Error('Recipe report claimed execution.');
+  for(const [name,value] of Object.entries(recipes.permissions||{}))if(value!==false)throw new Error('Recipe report widened permission '+name+'.');
+  if(!Array.isArray(recipes.results)||recipes.results.length!==7)throw new Error('Installed recipe catalog shape mismatch.');
+  const recipeStrings=values(recipes);
+  if(recipeStrings.some(value=>privateValues.some(secret=>value===secret||value.includes(secret))))throw new Error('Recipe report exposed a local path or host name.');
+
+  console.log('Clean npm package install, executable version, redacted support receipt, and nonexecuting Recipe Lab: PASS');
 }finally{await fs.rm(tmp,{recursive:true,force:true});}
