@@ -24,15 +24,17 @@ The first source is [`local-inference-lab/rtx6kpro`](https://github.com/local-in
 
 `CANDIDATE` means the hardware matches the established requirements/reference conditions for a source observation, but the source evidence is not an Aperture qualification of this machine.
 
-`UNKNOWN` means the source does not establish a required boundary. A common example is a recipe observed on a 96 GiB GPU when the local GPU has 32 GiB and the source never established a lower memory floor. Aperture keeps the result unknown instead of converting the reference card into either a false minimum or a false compatibility claim.
+`UNKNOWN` means the source does not establish a required boundary. A common example is a recipe observed on a 96 GB-class GPU when the local GPU has 32 GiB and the source never established a lower memory floor. Aperture keeps the result unknown instead of converting the reference card into either a false minimum or a false compatibility claim.
 
-`BLOCKED` means an observed hard requirement is violated. Examples include too few GPUs, a numerical format that requires a newer compute capability, or physical VRAM below an observed working-set lower bound for the exact recipe.
+`BLOCKED` means an observed hard requirement is violated. Examples include too few GPUs, a numerical format that requires a newer compute capability, or physical VRAM below a separately established exact working-set floor for the recipe.
 
 ## Reference hardware is not a minimum
 
 The central rule is that an observed reference machine and a proven hardware floor are different objects.
 
-If a source says a configuration ran on one 96 GiB GPU, Aperture records that as a reference. It does not claim that 96 GiB is required. If the same source reports an 82 GiB per-GPU working set for an exact four-GPU configuration, a GPU with less than 82 GiB can be rejected for that exact configuration because the observed working set itself exceeds the physical capacity.
+If a source says a configuration ran on a 96 GB-class GPU, Aperture records that as a reference. It does not claim that 96 GB is required. If the source gives an approximate working-set figure, such as roughly 82 GiB per GPU, Aperture also keeps that as reference evidence. A smaller GPU becomes `UNKNOWN`, not `BLOCKED`, until a bounded fit/load canary or another exact source establishes the lower boundary. Only an explicitly established floor is allowed to produce a physical-memory hard rejection.
+
+The 96 GB class itself is compared with a small tolerance because driver-reported usable capacity is normally below the marketed nominal value. That tolerance is only for recognizing the reference class; it is not a new fit margin and is never used to invent a lower hardware floor.
 
 When the local machine is smaller than the reference but no floor is established, Aperture returns `UNKNOWN` and identifies the next canary: resolve the exact checkpoint and requested context, run the native fit assessment, and only then decide whether acquisition or loading is justified.
 
