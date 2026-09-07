@@ -1,0 +1,74 @@
+{
+  "schema": "aperture-fabric-benchmark-spec/1",
+  "id": "qwen38-flash-next-ud-q4-k-xl-fabric-v1",
+  "benchmarkRecipe": "recipe.json",
+  "authority": {
+    "role": "estate-head",
+    "rule": "Only the estate head admits the occurrence, constructs placement, receives worker endpoints, and emits the authoritative receipt."
+  },
+  "accelerators": {
+    "selector": "RTX 3090",
+    "selectorMode": "canonical-model",
+    "count": 4,
+    "homogeneous": true,
+    "memoryAccounting": "FOUR_SEPARATE_PHYSICAL_DOMAINS",
+    "reservePerGpuBytes": 2147483648,
+    "rule": "NVIDIA and GeForce branding tokens are ignored when matching the canonical RTX 3090 model. RTX 3090 Ti and other GPU models do not match. The four admitted cards may be summed only as a planning total; they are never represented as one 96 GiB accelerator or one addressable VRAM pool."
+  },
+  "host": {
+    "reserveBytes": 4294967296,
+    "cpuWeightPlacement": "AUTHORITY_HOST_ONLY_FOR_FIRST_ADAPTER",
+    "modelByteCount": "OBSERVE_EXACT_LOCAL_SHARD_BYTES_AT_ADMISSION"
+  },
+  "adapter": {
+    "name": "llama.cpp-rpc",
+    "transport": "lan-tcp",
+    "commit": "REQUIRED_EXACTLY_AT_EXECUTION",
+    "buildIdentity": "REQUIRED_EXACTLY_AT_EXECUTION",
+    "requiredCapabilities": ["cuda", "rpcServer", "llamaBench"],
+    "scope": "ESTATE_LAN_ONLY",
+    "replaceable": true
+  },
+  "correctness": {
+    "requiredBeforePerformance": true,
+    "contexts": [2048, 8192, 32768],
+    "fenceRequired": true,
+    "failureAction": "HOLD_CORRECTNESS_AND_PUBLISH_NO_THROUGHPUT"
+  },
+  "benchmark": {
+    "fixture": "portable-v1",
+    "promptTokens": 4096,
+    "generatedTokens": 256,
+    "contextDepths": [0, 32768, 65536, 131072],
+    "repetitions": 3,
+    "batchSize": 4096,
+    "ubatchSize": 4096,
+    "output": "json"
+  },
+  "occupiedSeat": {
+    "allowHeadlessGpuWorker": true,
+    "openDesktop": false,
+    "browser": false,
+    "focusChange": false,
+    "interactiveCredentialPrompt": false,
+    "rule": "A worker may consume an admitted GPU on an occupied machine only through the resident headless worker. The Fabric controller may not address that desktop session."
+  },
+  "custody": {
+    "verifyEveryModelShardSha256": true,
+    "workerReceiptsRequired": true,
+    "occurrenceLeaseAndFenceRequired": true,
+    "staleWorkerCommit": false,
+    "cleanupReceiptRequired": true
+  },
+  "publication": {
+    "redactInternalHostnames": true,
+    "redactAddresses": true,
+    "redactPaths": true,
+    "redactCredentials": true,
+    "retainPerDomainCapacity": true,
+    "retainPlacementBytes": true,
+    "retainTransportClassAndObservedRate": true,
+    "retainRuntimeCommitAndBuildIdentity": true
+  },
+  "status": "READY_FOR_LIVE_CENSUS_AND_ADAPTER_QUALIFICATION"
+}
