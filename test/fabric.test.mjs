@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {GiB} from '../lib/common.mjs';
 import {makeFabricPlan,admitFabricCanaries,admitFabricBenchmark,reducedFabricReceipt} from '../lib/fabric.mjs';
 import {qualifyRpcAdapter,makeRpcIntents,admitPreparedRpcTransaction,staleWorkerMayCommit} from '../lib/fabric-rpc.mjs';
+import {makeFabricCensus} from '../lib/fabric-census.mjs';
 
 const adapter=qualifyRpcAdapter({name:'llama.cpp-rpc',commit:'a'.repeat(40),buildIdentity:'fixture-cuda-rpc',transport:'lan-tcp',capabilities:{cuda:true,rpcServer:true,llamaBench:true}});
 const gpu=(id,domain,free=23)=>({id,memoryDomain:domain,kind:'nvidia',name:'NVIDIA RTX 3090',totalBytes:24*GiB,freeBytes:free*GiB,computeCapability:8.6,externalGate:false,link:{kind:'PCIe',generation:4,width:16}});
@@ -96,4 +97,24 @@ test('reduced receipt removes internal node/device identities while retaining to
   assert.doesNotMatch(text,/worker-a|worker-b|domain0|domain1|domain2|domain3/);
   assert.match(text,/gpu-domain-1/);
   assert.equal(receipt.performance,'NOT_ADMITTED');
+});
+
+test('ordinary per-node Aperture scans become one fabric census without opening the occupied seat',()=>{
+  const scan=(uuid,index=0)=>({schema:'aperture-scan/1',observedAt:'2026-09-07T00:00:00Z',memory:{totalBytes:64*GiB,allocationHeadroomBytes:48*GiB},gpu:{devices:[{index,uuid,memoryDomain:uuid,name:'NVIDIA RTX 3090',totalBytes:24*GiB,freeBytes:23*GiB,computeCapability:8.6,externalGate:false,pcie:{generation:4,width:16}}]}});
+  const observations=[
+    {id:'head',reachable:true,worker:{headless:true,state:'READY',transport:'estate-agent'},scan:scan('GPU-a')},
+    {id:'occupied',reachable:true,interactiveOccupied:true,worker:{headless:true,state:'READY',transport:'estate-agent'},scan:scan('GPU-b')}
+  ];
+  const result=makeFabricCensus(observations,{authorityNodeId:'head',adapters:[adapter]});
+  assert.equal(result.nodes[1].state,'READY');
+  assert.equal(result.nodes[1].interactiveOccupied,true);
+  assert.equal(result.nodes[1].worker.headless,true);
+  assert.equal(result.nodes[1].devices.length,1);
+});
+
+test('reachable machine without a ready headless worker is not admitted as a fabric worker',()=>{
+  const scan={schema:'aperture-scan/1',memory:{allocationHeadroomBytes:32*GiB},gpu:{devices:[]}};
+  const result=makeFabricCensus([{id:'head',reachable:true,worker:{headless:true,state:'READY'},scan},{id:'seat',reachable:true,worker:{headless:false,state:'MISSING'},scan}],{authorityNodeId:'head'});
+  assert.equal(result.nodes[1].state,'UNREACHABLE');
+  assert.match(result.claimBoundary,/does not imply powered off/);
 });
