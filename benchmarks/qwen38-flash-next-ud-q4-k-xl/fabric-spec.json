@@ -7,12 +7,13 @@
     "rule": "Only the estate head admits the occurrence, constructs placement, receives worker endpoints, and emits the authoritative receipt."
   },
   "accelerators": {
-    "selector": "NVIDIA RTX 3090",
+    "selector": "RTX 3090",
+    "selectorMode": "canonical-model",
     "count": 4,
     "homogeneous": true,
     "memoryAccounting": "FOUR_SEPARATE_PHYSICAL_DOMAINS",
     "reservePerGpuBytes": 2147483648,
-    "rule": "The four cards may be summed only as a planning total. They are never represented as one 96 GiB accelerator or one addressable VRAM pool."
+    "rule": "NVIDIA and GeForce branding tokens are ignored when matching the canonical RTX 3090 model. RTX 3090 Ti and other GPU models do not match. The four admitted cards may be summed only as a planning total; they are never represented as one 96 GiB accelerator or one addressable VRAM pool."
   },
   "host": {
     "reserveBytes": 4294967296,
