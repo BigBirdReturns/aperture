@@ -1,0 +1,121 @@
+{
+  "schema": "aperture-fabric-census/1",
+  "synthetic": true,
+  "authorityNodeId": "dorm-head",
+  "observedAt": "2026-09-07T19:43:00-07:00",
+  "nodes": [
+    {
+      "id": "dorm-head",
+      "state": "READY",
+      "os": {"platform": "linux", "architecture": "x64"},
+      "memory": {"physicalBytes": 34359738368, "allocationHeadroomBytes": 17179869184},
+      "runtime": {},
+      "devices": [
+        {"id": "cpu0", "kind": "cpu", "name": "Dorm queue head", "memoryDomain": "dorm-head-system", "totalBytes": 34359738368, "freeBytes": 17179869184}
+      ]
+    },
+    {
+      "id": "room-101-5090",
+      "state": "READY",
+      "os": {"platform": "linux", "architecture": "x64"},
+      "memory": {"physicalBytes": 137438953472, "allocationHeadroomBytes": 103079215104},
+      "runtime": {
+        "cuda": {"available": true, "identity": "cuda-observed-fixture"},
+        "sglang": {"serve": true, "identity": "sglang@2bf04f3a67edf5f1c43b4f00761f19758346dcf7", "revision": "2bf04f3a67edf5f1c43b4f00761f19758346dcf7"}
+      },
+      "devices": [
+        {"id": "cuda0", "kind": "nvidia", "name": "NVIDIA GeForce RTX 5090", "memoryDomain": "room-101-cuda0", "totalBytes": 34359738368, "freeBytes": 32212254720, "computeCapability": 12.0}
+      ]
+    },
+    {
+      "id": "room-203-m4",
+      "state": "READY",
+      "os": {"platform": "darwin", "architecture": "arm64"},
+      "productName": "MacBook Pro M4",
+      "memory": {"physicalBytes": 25769803776, "allocationHeadroomBytes": 17179869184},
+      "runtime": {
+        "metal": {"available": true, "identity": "metal-observed-fixture"},
+        "mlxLm": {"server": true, "identity": "mlx-lm@7fb4be44d560e5b74595210f83cb6003a57e52a7", "revision": "7fb4be44d560e5b74595210f83cb6003a57e52a7"}
+      },
+      "devices": [
+        {"id": "metal0", "kind": "metal", "name": "Apple M4 GPU", "memoryDomain": "room-203-unified", "totalBytes": 25769803776, "freeBytes": 17179869184}
+      ]
+    },
+    {
+      "id": "room-207-4060-laptop",
+      "state": "READY",
+      "os": {"platform": "windows", "architecture": "x64"},
+      "memory": {"physicalBytes": 34359738368, "allocationHeadroomBytes": 21474836480},
+      "runtime": {"cuda": {"available": true, "identity": "cuda-observed-fixture"}},
+      "devices": [
+        {"id": "cuda0", "kind": "nvidia", "name": "NVIDIA GeForce RTX 4060 Laptop GPU", "memoryDomain": "room-207-cuda0", "totalBytes": 8589934592, "freeBytes": 7516192768, "computeCapability": 8.9}
+      ]
+    },
+    {
+      "id": "room-301-r9700",
+      "state": "IDLE",
+      "os": {"platform": "linux", "architecture": "x64"},
+      "memory": {"physicalBytes": 137438953472, "allocationHeadroomBytes": 103079215104},
+      "runtime": {"rocm": {"available": true, "identity": "rocm-observed-fixture"}},
+      "devices": [
+        {"id": "rocm0", "kind": "amd", "name": "AMD Radeon AI PRO R9700", "memoryDomain": "room-301-rocm0", "totalBytes": 34359738368, "freeBytes": 32212254720}
+      ]
+    },
+    {
+      "id": "room-404-old-laptop",
+      "state": "READY",
+      "os": {"platform": "linux", "architecture": "x64"},
+      "memory": {"physicalBytes": 17179869184, "allocationHeadroomBytes": 10737418240},
+      "runtime": {},
+      "devices": [
+        {"id": "igpu0", "kind": "other", "name": "Integrated graphics", "memoryDomain": "room-404-unified", "totalBytes": 17179869184, "freeBytes": 10737418240}
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": "coding-service",
+      "kind": "inference-service",
+      "priority": 100,
+      "required": true,
+      "adapters": ["sglang/minicpm5-2b-dspark"],
+      "model": {"id": "openbmb/MiniCPM5-2B", "quantization": "BF16"},
+      "speculative": {"algorithm": "DSPARK"},
+      "distribution": {"nodes": 1},
+      "service": {"host": "127.0.0.1", "port": 30000},
+      "policy": {"allowRemoteCode": true, "allowLanBind": false}
+    },
+    {
+      "id": "resident-mac-chat",
+      "kind": "inference-service",
+      "priority": 90,
+      "required": true,
+      "fixture": true,
+      "adapters": ["mlx-lm/server"],
+      "model": {"id": "mlx-community/Qwen3.5-4B-MLX-4bit", "format": "mlx", "locator": "hf://mlx-community/Qwen3.5-4B-MLX-4bit"},
+      "service": {"host": "127.0.0.1", "port": 8080},
+      "policy": {"allowRemoteCode": false, "allowLanBind": false},
+      "fitEvidence": {
+        "schema": "aperture-runtime-fit-evidence/1",
+        "state": "FIT",
+        "adapterId": "mlx-lm/server",
+        "seatId": "room-203-m4/metal0",
+        "modelId": "mlx-community/Qwen3.5-4B-MLX-4bit",
+        "sourceRevision": "7fb4be44d560e5b74595210f83cb6003a57e52a7",
+        "basis": "synthetic-fixture",
+        "workingSetBytes": 6442450944,
+        "receiptSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "id": "rocm-vision-experiment",
+      "kind": "inference-service",
+      "priority": 10,
+      "required": false,
+      "adapters": ["rocm/vllm"],
+      "model": {"id": "fixture/vision-model", "format": "safetensors"},
+      "service": {"host": "127.0.0.1", "port": 8100},
+      "policy": {"allowRemoteCode": false, "allowLanBind": false}
+    }
+  ]
+}
