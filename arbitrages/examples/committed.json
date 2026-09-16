@@ -1,0 +1,347 @@
+{
+  "schema": "arbitrages.v1",
+  "name": "Committed capacity: releasing time does not cancel the invoice",
+  "deadline_s": 500,
+  "min_quality": 1,
+  "quality_contract": "Illustrative fixed model, precision, dataset and exact-output validation contract. All scores are assumptions in this fixture; no LLM was run.",
+  "accounting": "committed",
+  "baseline_resource": "premium",
+  "notes": "Every duration, memory envelope, quality score, rate and transfer measurement in this example is invented for testing. Output data resides in an external durable store; source serialization/upload is included in profiles. These are complete batch stages, not arbitrary partitions of a tightly coupled model.",
+  "resources": [
+    {
+      "id": "premium",
+      "label": "Premium GPU slot \u00b7 illustrative",
+      "memory_gib": {
+        "ram": 192,
+        "vram": 160,
+        "disk": 512
+      },
+      "usd_per_hour": 7.2,
+      "billing_quantum_s": 1,
+      "minimum_lease_s": 60,
+      "startup_s": 20,
+      "premium": true,
+      "price_source": "Illustrative scenario input, not a vendor quote or invoice.",
+      "price_kind": "illustrative"
+    },
+    {
+      "id": "economy",
+      "label": "Economy GPU slot \u00b7 illustrative",
+      "memory_gib": {
+        "ram": 128,
+        "vram": 48,
+        "disk": 512
+      },
+      "usd_per_hour": 1.8,
+      "billing_quantum_s": 1,
+      "minimum_lease_s": 60,
+      "startup_s": 12,
+      "premium": false,
+      "price_source": "Illustrative scenario input, not a vendor quote or invoice.",
+      "price_kind": "illustrative"
+    },
+    {
+      "id": "cpu",
+      "label": "CPU slot \u00b7 illustrative",
+      "memory_gib": {
+        "ram": 32,
+        "vram": 0,
+        "disk": 512
+      },
+      "usd_per_hour": 0.36,
+      "billing_quantum_s": 1,
+      "minimum_lease_s": 60,
+      "startup_s": 2,
+      "premium": false,
+      "price_source": "Illustrative scenario input, not a vendor quote or invoice.",
+      "price_kind": "illustrative"
+    }
+  ],
+  "links": [
+    {
+      "from": "premium",
+      "to": "economy",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "premium",
+      "to": "cpu",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "economy",
+      "to": "premium",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "economy",
+      "to": "cpu",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "cpu",
+      "to": "premium",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "cpu",
+      "to": "economy",
+      "bandwidth_gib_s": 2,
+      "latency_s": 0.02,
+      "usd_per_gib": 0.01,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "extract",
+      "deps": [],
+      "output_gib": 0.5,
+      "profiles": [
+        {
+          "id": "gpu",
+          "resource": "premium",
+          "duration_s": 35,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 8
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "cpu",
+          "resource": "cpu",
+          "duration_s": 30,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 0
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "economy",
+          "resource": "economy",
+          "duration_s": 42,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 8
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        }
+      ]
+    },
+    {
+      "id": "transform",
+      "deps": [
+        "extract"
+      ],
+      "output_gib": 0.1,
+      "profiles": [
+        {
+          "id": "gpu",
+          "resource": "premium",
+          "duration_s": 45,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 12
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "cpu",
+          "resource": "cpu",
+          "duration_s": 45,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 0
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "economy",
+          "resource": "economy",
+          "duration_s": 55,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 12
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        }
+      ]
+    },
+    {
+      "id": "generate",
+      "deps": [
+        "transform"
+      ],
+      "output_gib": 0.01,
+      "profiles": [
+        {
+          "id": "gpu",
+          "resource": "premium",
+          "duration_s": 130,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 72
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "offload",
+          "resource": "economy",
+          "duration_s": 300,
+          "memory_gib": {
+            "ram": 80,
+            "vram": 40
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "does-not-fit",
+          "resource": "economy",
+          "duration_s": 160,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 72
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "quality-fails",
+          "resource": "economy",
+          "duration_s": 110,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 32
+          },
+          "quality": 0.8,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        }
+      ]
+    },
+    {
+      "id": "verify",
+      "deps": [
+        "generate"
+      ],
+      "output_gib": 0,
+      "profiles": [
+        {
+          "id": "gpu",
+          "resource": "premium",
+          "duration_s": 30,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 4
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "cpu",
+          "resource": "cpu",
+          "duration_s": 40,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 0
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        },
+        {
+          "id": "economy",
+          "resource": "economy",
+          "duration_s": 38,
+          "memory_gib": {
+            "ram": 8,
+            "vram": 4
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Synthetic planning fixture. No execution measurement."
+          }
+        }
+      ]
+    }
+  ],
+  "horizon_s": 86400
+}

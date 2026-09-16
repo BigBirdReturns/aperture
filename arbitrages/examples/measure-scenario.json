@@ -1,0 +1,105 @@
+{
+  "schema": "arbitrages.v1",
+  "name": "Unpriced trusted-command profiling example",
+  "deadline_s": 100,
+  "min_quality": 1,
+  "quality_contract": "Exact newline-terminated decimal 49995000, from summing integers 0 through 9999.",
+  "accounting": "metered",
+  "baseline_resource": "premium",
+  "notes": "Both identifiers are logical local CPU variants, not real premium/economy GPUs. No cost claims.",
+  "resources": [
+    {
+      "id": "premium",
+      "label": "Local CPU command slot premium",
+      "memory_gib": {
+        "ram": 192,
+        "vram": 160,
+        "disk": 512
+      },
+      "usd_per_hour": 0,
+      "billing_quantum_s": 1,
+      "minimum_lease_s": 0,
+      "startup_s": 0,
+      "premium": false,
+      "price_source": "No allocation price supplied.",
+      "price_kind": "unpriced"
+    },
+    {
+      "id": "economy",
+      "label": "Local CPU command slot economy",
+      "memory_gib": {
+        "ram": 128,
+        "vram": 48,
+        "disk": 512
+      },
+      "usd_per_hour": 0,
+      "billing_quantum_s": 1,
+      "minimum_lease_s": 0,
+      "startup_s": 0,
+      "premium": false,
+      "price_source": "No allocation price supplied.",
+      "price_kind": "unpriced"
+    }
+  ],
+  "links": [
+    {
+      "from": "premium",
+      "to": "economy",
+      "bandwidth_gib_s": 1,
+      "latency_s": 0,
+      "usd_per_gib": 0,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    },
+    {
+      "from": "economy",
+      "to": "premium",
+      "bandwidth_gib_s": 1,
+      "latency_s": 0,
+      "usd_per_gib": 0,
+      "evidence": {
+        "kind": "assumed",
+        "source": "Illustrative shared-fabric/staging cost; no measured network."
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "a",
+      "deps": [],
+      "output_gib": 0,
+      "profiles": [
+        {
+          "id": "premium",
+          "resource": "premium",
+          "duration_s": 10,
+          "memory_gib": {
+            "ram": 1,
+            "vram": 1
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Placeholder timing replaced only by passing command measurements."
+          }
+        },
+        {
+          "id": "economy",
+          "resource": "economy",
+          "duration_s": 10,
+          "memory_gib": {
+            "ram": 1,
+            "vram": 1
+          },
+          "quality": 1,
+          "evidence": {
+            "kind": "assumed",
+            "source": "Placeholder timing replaced only by passing command measurements."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "arbitrages.measure.v1",
+  "scenario_file": "measure-scenario.json",
+  "trials": 3,
+  "commands": [
+    {
+      "stage": "a",
+      "profile": "premium",
+      "argv": [
+        "$PYTHON",
+        "-S",
+        "measure-task.py",
+        "loop"
+      ],
+      "expected_stdout_sha256": "d6075389cdb7a8f518e688411a7c63544210fcef63d52dc47068a46cef0d92ab",
+      "timeout_s": 5
+    },
+    {
+      "stage": "a",
+      "profile": "economy",
+      "argv": [
+        "$PYTHON",
+        "-S",
+        "measure-task.py",
+        "formula"
+      ],
+      "expected_stdout_sha256": "d6075389cdb7a8f518e688411a7c63544210fcef63d52dc47068a46cef0d92ab",
+      "timeout_s": 5
+    }
+  ]
+}
