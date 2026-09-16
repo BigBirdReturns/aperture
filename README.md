@@ -104,3 +104,10 @@ No telemetry or automatic result upload is enabled. Raw local run records can co
 ## Credits and licenses
 
 Aperture is an independent MIT-licensed controller. [Magnitude](https://github.com/magnitudedev/magnitude) inspired the scan/select/setup experience. [node-llama-cpp](https://node-llama-cpp.withcat.ai/), [llama.cpp](https://github.com/ggml-org/llama.cpp), and [Hugging Face Accelerate](https://huggingface.co/docs/accelerate/usage_guides/big_modeling) provide distinct runtime capabilities under their own licenses. The first Recipe Lab catalog cites factual observations from [local-inference-lab/rtx6kpro](https://github.com/local-inference-lab/rtx6kpro) without redistributing its prose or executable material. Model checkpoints keep their publishers' license and access conditions. No model weights are included here.
+
+## Experimental schedule-economics lab
+
+[Arbitrages](arbitrages/README.md) is a separate source-only Python module for
+profile-driven DAG placement, independent billing audits, actual CPU controls,
+and a local calculator. It does not change the released Aperture runner or
+claim verified GPU savings. See its evidence and execution boundaries.

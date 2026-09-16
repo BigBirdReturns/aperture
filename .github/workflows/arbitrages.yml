@@ -1,0 +1,32 @@
+name: Arbitrages reference controls
+on:
+  pull_request:
+    paths: ['arbitrages/**', '.github/workflows/arbitrages.yml']
+  push:
+    branches: [main, 'feat/arbitrages-reference']
+    paths: ['arbitrages/**', '.github/workflows/arbitrages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  controls:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Tests including actual CPU and process controls
+        run: python -m unittest discover -s arbitrages/tests -v
+      - name: Measured CPU path
+        run: python -m arbitrages demo --out "${{ runner.temp }}/arbitrages-proof" --trials 3 --items 1500
+      - name: Verify raw measurements
+        run: python -m arbitrages verify-bench "${{ runner.temp }}/arbitrages-proof"
+      - name: Independent schedule audit
+        run: python -m arbitrages audit "${{ runner.temp }}/arbitrages-proof/plan.json"
