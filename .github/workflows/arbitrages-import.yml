@@ -1,0 +1,61 @@
+name: One-shot Arbitrages source import
+on:
+  push:
+    branches: [feat/arbitrages-reference]
+    paths: [.github/workflows/arbitrages-import.yml]
+permissions:
+  contents: write
+jobs:
+  import-reviewed-source:
+    if: github.ref == 'refs/heads/feat/arbitrages-reference'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/arbitrages-reference
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Download exact reviewed source artifact
+        shell: pwsh
+        run: |
+          $u = 'https://sdmntprwestus.oaiusercontent.com/files/00000000-f8c8-8230-a26e-05f3a1d80877/raw?se=2026-09-16T18%3A11%3A45Z&sp=r&sv=2026-02-06&sr=b&scid=a50ef814-d8ba-538a-bc38-f1a83194e629&skoid=4b04981f-b1dc-41e0-a770-8ce0d5c8f411&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-15T19%3A16%3A36Z&ske=2026-09-16T19%3A16%3A36Z&sks=b&skv=2026-02-06&sig=W0M5xkD%2BCiGXhBuTnY77BwcA8HJI1s0bwvjZF%2B07WDM%3D'
+          $p = Join-Path $env:RUNNER_TEMP source.zip
+          Invoke-WebRequest -Uri $u -OutFile $p
+          if ((Get-FileHash $p -Algorithm SHA256).Hash -ne 'dad1a9169bcd67edc56eb34a7532e63aca64e7ba90e889ae9b8c16d9dc50e05f') { throw 'Source artifact hash mismatch' }
+      - name: Admit only new experimental-module files
+        shell: python
+        run: |
+          import os, pathlib, zipfile, hashlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'source.zip'
+          assert hashlib.sha256(p.read_bytes()).hexdigest() == 'dad1a9169bcd67edc56eb34a7532e63aca64e7ba90e889ae9b8c16d9dc50e05f'
+          root = pathlib.Path.cwd()
+          with zipfile.ZipFile(p) as z:
+              assert len(z.namelist()) == 31
+              for name in z.namelist():
+                  assert '..' not in pathlib.PurePosixPath(name).parts and not name.startswith('/')
+                  if name == '.github/workflows/arbitrages.yml':
+                      continue
+                  assert name.startswith('arbitrages/') and not (root/name).exists()
+                  z.extract(name, root)
+          p = root/'README.md'
+          p.write_text(p.read_text(encoding='utf-8') + '\n## Experimental schedule-economics lab\n\n[Arbitrages](arbitrages/README.md) is a separate source-only Python module for\nprofile-driven DAG placement, independent billing audits, actual CPU controls,\nand a local calculator. It does not change the released Aperture runner or\nclaim verified GPU savings. See its evidence and execution boundaries.\n', encoding='utf-8', newline='\n')
+      - name: Validate the actual module
+        run: python -m unittest discover -s arbitrages/tests -v
+      - name: Exercise actual CPU execution
+        run: python -m arbitrages demo --out "${{ runner.temp }}/cpu-proof" --trials 3 --items 1500
+      - name: Preserve existing release controls
+        run: npm test
+      - name: Commit only reviewed source to this feature branch
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- arbitrages README.md
+          git diff --cached --check
+          if ($LASTEXITCODE -ne 0) { throw 'Whitespace check failed' }
+          git commit -m 'Add Arbitrages experimental planner, profiler, auditor and local calculator'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          git push origin HEAD:feat/arbitrages-reference
+          if ($LASTEXITCODE -ne 0) { throw 'Push failed' }
